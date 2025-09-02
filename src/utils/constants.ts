@@ -1,0 +1,1 @@
+export const cardMaxW = { base: '300px', sm: '400px', md: '700px' }

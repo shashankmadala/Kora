@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* * {
+	outline: 1px solid red !important;
+} */
+
+* {
+	font-family: 'Inter', sans-serif;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.visually-hidden:not(:focus):not(:active) {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: auto;
+	margin: 0;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	white-space: nowrap;
+}
+
+li {
+	margin-left: 1rem;
+}
