@@ -16,9 +16,13 @@ export default function ModelProvider({ children }: { children: React.ReactNode 
     useEffect(() => {
         loadModel().then(mod => {
             setModel(mod)
-        }).then(() => {
-            const result = model?.predict(tf.zeros([1, 224, 224, 3])) as tf.Tensor
-            result.dataSync()
+            // Test the model after it's loaded
+            if (mod) {
+                const result = mod.predict(tf.zeros([1, 224, 224, 3])) as tf.Tensor
+                result.dataSync()
+            }
+        }).catch(error => {
+            console.error('Error loading model:', error)
         })
 
         return () => model?.dispose()

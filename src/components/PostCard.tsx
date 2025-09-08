@@ -4,7 +4,21 @@ import { Link } from 'react-router-dom'
 
 export default function PostCard(props: Post) {
     return (
-        <Card as={Link} to={`/app/post/${props.id}`} maxW={320} w='100%' mx='auto' userSelect='none' _active={{ bg: '#F7F7F7' }} _hover={{ bg: '#F7F7F7' }}>
+        <Card 
+            as={Link} 
+            to={`/app/post/${props.id}`} 
+            w='100%' 
+            userSelect='none' 
+            _active={{ bg: '#F7F7F7' }} 
+            _hover={{ 
+                bg: '#F7F7F7',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
+            }}
+            transition='all 0.2s ease'
+            borderRadius='16px'
+            boxShadow='0 2px 10px rgba(0,0,0,0.05)'
+        >
             <CardHeader>
                 <Text fontSize='small' color='grey'>{props.username}</Text>
                 <Text fontSize='large' fontWeight='medium'>{props.title}</Text>
