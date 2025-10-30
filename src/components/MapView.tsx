@@ -37,9 +37,8 @@ export default function MapView({ resources, userLocation, onResourceSelect }: M
     useEffect(() => {
         if (!mapRef.current) return
 
-        // Initialize map
         const mapInstance = new google.maps.Map(mapRef.current, {
-            center: userLocation || { lat: 40.7128, lng: -74.0060 }, // Default to NYC
+            center: userLocation || { lat: 40.7128, lng: -74.0060 },
             zoom: 12,
             styles: [
                 {
@@ -52,7 +51,6 @@ export default function MapView({ resources, userLocation, onResourceSelect }: M
 
         setMap(mapInstance)
 
-        // Add user location marker if available
         if (userLocation) {
             new google.maps.Marker({
                 position: userLocation,
@@ -73,10 +71,8 @@ export default function MapView({ resources, userLocation, onResourceSelect }: M
     useEffect(() => {
         if (!map) return
 
-        // Clear existing markers
         markers.forEach(marker => marker.setMap(null))
 
-        // Add resource markers
         const newMarkers = resources.map(resource => {
             const marker = new google.maps.Marker({
                 position: { lat: resource.lat, lng: resource.lng },
@@ -102,7 +98,6 @@ export default function MapView({ resources, userLocation, onResourceSelect }: M
 
         setMarkers(newMarkers)
 
-        // Fit map to show all markers
         if (resources.length > 0) {
             const bounds = new google.maps.LatLngBounds()
             resources.forEach(resource => {
@@ -124,7 +119,6 @@ export default function MapView({ resources, userLocation, onResourceSelect }: M
             'Support Group': '#ef4444',
             'Telehealth': '#06b6d4'
         }
-        // Use the first type for color, or default if none match
         const firstType = types[0] || 'Other'
         return colors[firstType] || '#6b7280'
     }
@@ -138,10 +132,8 @@ export default function MapView({ resources, userLocation, onResourceSelect }: M
 
     return (
         <Box position="relative" w="full" h="full">
-            {/* Map Container */}
             <Box ref={mapRef} w="full" h="full" borderRadius="12px" />
             
-            {/* Selected Resource Info */}
             {selectedResource && (
                 <Box
                     position="absolute"
@@ -231,7 +223,6 @@ export default function MapView({ resources, userLocation, onResourceSelect }: M
                 </Box>
             )}
 
-            {/* Legend */}
             <Box
                 position="absolute"
                 top="4"

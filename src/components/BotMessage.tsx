@@ -3,7 +3,7 @@ import Markdown from 'react-markdown'
 import { Bot } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-const MotionBox = motion(Box)
+const MotionBox = motion(Box as any)
 
 export default function BotMessage({ text }: { text: string }) {
     return (
@@ -31,12 +31,14 @@ export default function BotMessage({ text }: { text: string }) {
                     borderRadius='16px'
                     p={4}
                     boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'
+                    color='#111827'
+                    fontSize='sm'
+                    lineHeight='1.6'
+                    fontWeight='400'
                 >
-                    <Text color='#111827' fontSize='sm' lineHeight='1.6' fontWeight='400'>
-                        <Markdown>
-                            {text}
-                        </Markdown>
-                    </Text>
+                    <Markdown>
+                        {text}
+                    </Markdown>
                 </Box>
             </HStack>
         </MotionBox>

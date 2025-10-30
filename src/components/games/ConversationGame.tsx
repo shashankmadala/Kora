@@ -9,7 +9,6 @@ import { MessageCircle, CheckCircle, RotateCcw, User, Bot } from 'lucide-react'
 const MotionBox = motion(Box)
 const MotionButton = motion(Button)
 
-// Conversation data
 const conversations = [
     {
         id: 1,
@@ -112,27 +111,23 @@ export default function ConversationGame({ onComplete, onClose }: ConversationGa
         setSelectedResponse(responseIndex)
         setShowResponse(true)
 
-        // Add user's response to history
         const userResponse = currentMsg.options[responseIndex]
         setConversationHistory(prev => [
             ...prev,
             { speaker: 'user', text: userResponse.text }
         ])
 
-        // Add bot's response to history
         setTimeout(() => {
             setConversationHistory(prev => [
                 ...prev,
                 { speaker: 'bot', text: userResponse.response }
             ])
 
-            // Move to next message
             if (currentMessage < conversation.messages.length - 1) {
                 setCurrentMessage(currentMessage + 1)
                 setSelectedResponse(null)
                 setShowResponse(false)
             } else {
-                // Conversation complete
                 if (currentConversation < conversations.length - 1) {
                     setCurrentConversation(currentConversation + 1)
                     setCurrentMessage(0)
@@ -359,4 +354,7 @@ export default function ConversationGame({ onComplete, onClose }: ConversationGa
         </VStack>
     )
 }
+
+
+
 

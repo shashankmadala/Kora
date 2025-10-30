@@ -10,7 +10,6 @@ import { useState, useEffect } from 'react'
 const MotionBox = motion(Box)
 const MotionCard = motion(Card)
 
-// Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000, suffix = '' }: { end: number; duration?: number; suffix?: string }) => {
     const [count, setCount] = useState(0)
     
@@ -22,7 +21,6 @@ const AnimatedCounter = ({ end, duration = 2000, suffix = '' }: { end: number; d
             if (!startTime) startTime = currentTime
             const progress = Math.min((currentTime - startTime) / duration, 1)
             
-            // Easing function for smooth animation
             const easeOutQuart = 1 - Math.pow(1 - progress, 4)
             const currentCount = Math.floor(startValue + (end - startValue) * easeOutQuart)
             
@@ -39,41 +37,40 @@ const AnimatedCounter = ({ end, duration = 2000, suffix = '' }: { end: number; d
     return <>{count.toLocaleString()}{suffix}</>
 }
 
-// Quick Stats Component
 const QuickStat = ({ icon, value, label, color, trend }: { icon: any, value: string, label: string, color: string, trend?: string }) => (
     <MotionCard
         bg='white'
-        borderRadius='16px'
-        p={6}
-        boxShadow='0 4px 20px rgba(0, 0, 0, 0.08)'
+        borderRadius='12px'
+        p={4}
+        boxShadow='0 2px 12px rgba(0, 0, 0, 0.08)'
         border='1px solid rgba(0, 0, 0, 0.05)'
         _hover={{
-            transform: 'translateY(-4px)',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)'
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.12)'
         }}
         transition='all 0.3s ease'
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ scale: 1.02 }}
     >
-        <VStack spacing={3} align='center'>
+        <VStack spacing={2} align='center'>
             <Box
-                p={3}
-                borderRadius='12px'
+                p={2}
+                borderRadius='10px'
                 bg={`${color}10`}
                 color={color}
             >
-                <Icon as={icon} boxSize={6} />
+                <Icon as={icon} boxSize={4} />
             </Box>
-            <VStack spacing={1}>
-                <Text fontSize='2xl' fontWeight='800' color='#1f2937'>
+            <VStack spacing={0.5}>
+                <Text fontSize='lg' fontWeight='800' color='#1f2937'>
                     {value}
                 </Text>
-                <Text fontSize='sm' color='#6b7280' textAlign='center'>
+                <Text fontSize='xs' color='#6b7280' textAlign='center'>
                     {label}
                 </Text>
                 {trend && (
-                    <Text fontSize='xs' color='#10b981' fontWeight='600'>
+                    <Text fontSize='2xs' color='#10b981' fontWeight='600'>
                         {trend}
                     </Text>
                 )}
@@ -82,7 +79,6 @@ const QuickStat = ({ icon, value, label, color, trend }: { icon: any, value: str
     </MotionCard>
 )
 
-// Testimonial Component
 const TestimonialCard = ({ name, role, content, rating }: { name: string, role: string, content: string, rating: number }) => (
     <MotionCard
         bg='white'
@@ -132,7 +128,7 @@ const TestimonialCard = ({ name, role, content, rating }: { name: string, role: 
 export default function HomePage() {
     const { user } = useUser()
     const navigate = useNavigate()
-    const gridColumns = useBreakpointValue({ base: 1, md: 2, lg: 3 })
+    const gridColumns = useBreakpointValue({ base: 2, md: 2, lg: 3 })
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [currentTestimonial, setCurrentTestimonial] = useState(0)
 
@@ -157,7 +153,6 @@ export default function HomePage() {
         }
     ]
 
-    // Auto-rotate testimonials
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
@@ -167,17 +162,17 @@ export default function HomePage() {
 
     return (
         <Box minHeight='100vh' bgGradient='linear(to-br, #faf5ff, #f3e8ff, #e9d5ff)'>
-            <Container maxW='container.xl' pt={{ base: 20, md: 24 }} pb={20} px={4}>
+            <Container maxW='container.xl' pt={{ base: 12, md: 16 }} pb={12} px={3}>
                 {/* Hero Section */}
                 <ScaleFade initialScale={0.9} in={true}>
                     <MotionBox 
                         bgGradient='linear(to-br, white, #fefbff)'
                         borderRadius='24px'
-                        p={{ base: 8, md: 12 }}
+                        p={{ base: 3, md: 4 }}
                         textAlign='center'
-                        boxShadow='0 20px 40px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                        boxShadow='0 6px 20px -6px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
                         border='1px solid rgba(255, 255, 255, 0.2)'
-                        mb={12}
+                        mb={6}
                         position='relative'
                         overflow='hidden'
                         initial={{ opacity: 0, y: 20 }}
@@ -196,7 +191,7 @@ export default function HomePage() {
                             backgroundSize="20px 20px"
                         />
                         
-                        <VStack spacing={8} position='relative' zIndex={1}>
+                        <VStack spacing={5} position='relative' zIndex={1}>
                             {user && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
@@ -204,13 +199,13 @@ export default function HomePage() {
                                     transition={{ duration: 0.6 }}
                                 >
                                     <Badge 
-                                        px={6} 
-                                        py={3} 
+                                        px={4} 
+                                        py={2} 
                                         borderRadius='full' 
                                         bg='rgba(168, 85, 247, 0.1)' 
                                         color='#7c3aed' 
                                         border='1px solid rgba(168, 85, 247, 0.2)'
-                                        fontSize='sm'
+                                        fontSize='xs'
                                         fontWeight='600'
                                     >
                                         <TypewriterText 
@@ -221,38 +216,38 @@ export default function HomePage() {
                                 </motion.div>
                             )}
                             
-                            <VStack spacing={6}>
+                            <VStack spacing={4}>
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.8, delay: 0.2 }}
                                 >
-                                    <HStack spacing={4} align='center'>
+                                    <HStack spacing={2} align='center'>
                                         <Box
-                                            p={4}
-                                            borderRadius='20px'
+                                            p={2}
+                                            borderRadius='12px'
                                             bgGradient='linear(135deg, #a855f7, #7c3aed)'
-                                            boxShadow='0 8px 20px rgba(168, 85, 247, 0.3)'
+                                            boxShadow='0 4px 12px rgba(168, 85, 247, 0.3)'
                                             position='relative'
                                         >
-                                            <Icon as={Brain} boxSize={10} color='white' />
+                                            <Icon as={Brain} boxSize={5} color='white' />
                                             <Box
                                                 position='absolute'
-                                                top={-1}
-                                                right={-1}
-                                                w={4}
-                                                h={4}
+                                                top={-0.5}
+                                                right={-0.5}
+                                                w={2}
+                                                h={2}
                                                 bg='#10b981'
                                                 borderRadius='full'
-                                                border='2px solid white'
+                                                border='1px solid white'
                                                 animation='pulse 2s infinite'
                                             />
                                         </Box>
-                                        <VStack align='start' spacing={2}>
-                                            <Heading size='3xl' color='#1f2937' fontWeight='800' letterSpacing='-0.02em'>
+                                        <VStack align='start' spacing={0.5}>
+                                            <Heading size='xl' color='#1f2937' fontWeight='800' letterSpacing='-0.02em'>
                                                 Kora
                                             </Heading>
-                                            <Text fontSize='lg' color='#6b7280' fontWeight='500'>
+                                            <Text fontSize='sm' color='#6b7280' fontWeight='500'>
                                                 Next-Gen Autism Support
                                             </Text>
                                         </VStack>
@@ -274,10 +269,10 @@ export default function HomePage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.6, delay: 0.6 }}
                                 >
-                                    <HStack spacing={3} flexWrap='wrap' justify='center'>
+                                    <HStack spacing={2} flexWrap='wrap' justify='center'>
                                         <Badge 
-                                            px={5} 
-                                            py={3} 
+                                            px={2} 
+                                            py={1} 
                                             borderRadius='full' 
                                             bg='rgba(16, 185, 129, 0.1)' 
                                             color='#059669' 
@@ -286,13 +281,13 @@ export default function HomePage() {
                                             fontWeight='600'
                                         >
                                             <HStack spacing={2}>
-                                                <Icon as={Target} boxSize={4} />
+                                                <Icon as={Target} boxSize={3} />
                                                 <Text>87.83% Accuracy</Text>
                                             </HStack>
                                         </Badge>
                                         <Badge 
-                                            px={5} 
-                                            py={3} 
+                                            px={2} 
+                                            py={1} 
                                             borderRadius='full' 
                                             bg='rgba(168, 85, 247, 0.1)' 
                                             color='#7c3aed' 
@@ -301,13 +296,13 @@ export default function HomePage() {
                                             fontWeight='600'
                                         >
                                             <HStack spacing={2}>
-                                                <Icon as={Zap} boxSize={4} />
+                                                <Icon as={Zap} boxSize={3} />
                                                 <Text>AI-Powered</Text>
                                             </HStack>
                                         </Badge>
                                         <Badge 
-                                            px={5} 
-                                            py={3} 
+                                            px={2} 
+                                            py={1} 
                                             borderRadius='full' 
                                             bg='rgba(59, 130, 246, 0.1)' 
                                             color='#2563eb' 
@@ -316,7 +311,7 @@ export default function HomePage() {
                                             fontWeight='600'
                                         >
                                             <HStack spacing={2}>
-                                                <Icon as={Shield} boxSize={4} />
+                                                <Icon as={Shield} boxSize={3} />
                                                 <Text>Privacy-First</Text>
                                             </HStack>
                                         </Badge>
@@ -385,7 +380,7 @@ export default function HomePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                    <SimpleGrid columns={{ base: 2, md: 4 }} spacing={6} mb={16}>
+                    <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3} mb={12}>
                         <QuickStat 
                             icon={Target} 
                             value="87.83%" 
@@ -434,7 +429,7 @@ export default function HomePage() {
                         </VStack>
                     </motion.div>
 
-                    <SimpleGrid columns={gridColumns} spacing={8} w='full'>
+                    <SimpleGrid columns={gridColumns} spacing={4} w='full'>
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -567,7 +562,7 @@ export default function HomePage() {
                         fontWeight='700'
                     >
                         <HStack spacing={3}>
-                            <Icon as={Info} boxSize={6} />
+                            <Icon as={Info} boxSize={5} />
                             <Text>About Kora</Text>
                         </HStack>
                     </ModalHeader>
@@ -582,19 +577,19 @@ export default function HomePage() {
                             
                             <VStack spacing={4} align='stretch'>
                                 <HStack spacing={3}>
-                                    <Icon as={Target} boxSize={5} color='#10b981' />
+                                    <Icon as={Target} boxSize={4} color='#10b981' />
                                     <Text fontWeight='600' color='#1f2937'>87.83% Accuracy Rate</Text>
                                 </HStack>
                                 <HStack spacing={3}>
-                                    <Icon as={Shield} boxSize={5} color='#3b82f6' />
+                                    <Icon as={Shield} boxSize={4} color='#3b82f6' />
                                     <Text fontWeight='600' color='#1f2937'>Privacy-First Approach</Text>
                                 </HStack>
                                 <HStack spacing={3}>
-                                    <Icon as={Users} boxSize={5} color='#8b5cf6' />
+                                    <Icon as={Users} boxSize={4} color='#8b5cf6' />
                                     <Text fontWeight='600' color='#1f2937'>Supportive Community</Text>
                                 </HStack>
                                 <HStack spacing={3}>
-                                    <Icon as={Brain} boxSize={5} color='#f59e0b' />
+                                    <Icon as={Brain} boxSize={4} color='#f59e0b' />
                                     <Text fontWeight='600' color='#1f2937'>AI-Powered Insights</Text>
                                 </HStack>
                             </VStack>

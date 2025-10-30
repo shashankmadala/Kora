@@ -15,8 +15,8 @@ import { useUser } from '../firebase/useUser'
 import { createPost } from '../utils/createPost'
 import { Timestamp } from 'firebase/firestore'
 
-const MotionBox = motion(Box)
-const MotionButton = motion(Button)
+const MotionBox = motion(Box as any)
+const MotionButton = motion(Button as any)
 
 export default function CommunityPage() {
     const { user } = useUser()
@@ -73,7 +73,11 @@ export default function CommunityPage() {
         const postsToSort = results || posts.data || []
         switch (sortBy) {
             case 'recent':
-                return [...postsToSort].sort((a, b) => b.creationDate.seconds - a.creationDate.seconds)
+                return [...postsToSort].sort((a, b) => {
+                    const aTime = a.creationDate?.seconds || a.creationDate?.toMillis?.() || 0
+                    const bTime = b.creationDate?.seconds || b.creationDate?.toMillis?.() || 0
+                    return bTime - aTime
+                })
             case 'popular':
                 return [...postsToSort].sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0))
             case 'trending':
@@ -98,7 +102,7 @@ export default function CommunityPage() {
 
     return (
         <Box minHeight='100vh' bgGradient='linear(to-br, #faf5ff, #f3e8ff, #e9d5ff)'>
-            <Container maxW='container.xl' pt={20} pb={24}>
+            <Container maxW='container.xl' pt={12} pb={16}>
                 {/* Hero Section */}
         <ScaleFade initialScale={0.9} in={true}>
                     <MotionBox 

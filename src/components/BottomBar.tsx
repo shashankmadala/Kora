@@ -62,8 +62,8 @@ export default function BottomBar() {
 
     return (
         <Box 
-            h='90px' 
-            bg='rgba(255, 255, 255, 0.8)'
+            h='75px' 
+            bg='rgba(255, 255, 255, 0.9)'
             backdropFilter='blur(20px)'
             borderTop='1px solid rgba(255, 255, 255, 0.2)'
             display='flex' 
@@ -76,8 +76,8 @@ export default function BottomBar() {
             right={0}
             w='100%' 
             zIndex={1000} 
-            boxShadow='0 -8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-            px={6}
+            boxShadow='0 -2px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+            px={3}
             py={2}
         >
             {navLinks.map(({ to, icon: IconComponent, ariaLabel, label }) => {
@@ -91,39 +91,40 @@ export default function BottomBar() {
                             whileTap={{ scale: 0.9 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
-                            <VStack spacing={2} align='center'>
+                            <VStack spacing={1} align='center'>
                                 <Box
-                                    p={3}
-                                    borderRadius='16px'
+                                    p={2}
+                                    borderRadius='12px'
                                     bg={condition ? 'rgba(168, 85, 247, 0.15)' : 'rgba(255, 255, 255, 0.5)'}
                                     border={condition ? '1px solid rgba(168, 85, 247, 0.3)' : '1px solid rgba(255, 255, 255, 0.2)'}
-                                    boxShadow={condition ? '0 4px 12px rgba(168, 85, 247, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.05)'}
+                                    boxShadow={condition ? '0 2px 6px rgba(168, 85, 247, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.05)'}
                                     position='relative'
                                     overflow='hidden'
                                 >
                                     {condition && (
                                         <Box
                                             position='absolute'
-                                            top={-1}
-                                            right={-1}
-                                            w={3}
-                                            h={3}
+                                            top={-0.5}
+                                            right={-0.5}
+                                            w={2}
+                                            h={2}
                                             bg='#10b981'
                                             borderRadius='full'
-                                            border='2px solid white'
+                                            border='1px solid white'
                                         />
                                     )}
                                     <Icon 
                                         as={IconComponent} 
-                                        boxSize={6} 
+                                        boxSize={4} 
                                         color={condition ? '#7c3aed' : '#6b7280'}
                                     />
                                 </Box>
                                 <Text 
-                                    fontSize='xs' 
+                                    fontSize='2xs' 
                                     color={condition ? '#7c3aed' : '#6b7280'}
                                     fontWeight={condition ? '700' : '500'}
                                     letterSpacing='0.025em'
+                                    lineHeight='1'
                                 >
                                     {label}
                                 </Text>

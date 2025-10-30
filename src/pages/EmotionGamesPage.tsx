@@ -7,14 +7,11 @@ import {
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
-    Heart, Brain, Target, MessageCircle, Wind, Users,
+    Heart, Target, Wind, Users,
     Star, Trophy, Zap, Award, Play, Settings
 } from 'lucide-react'
 
-// Import game components
-import SocialDetectiveGame from '../components/games/SocialDetectiveGame'
 import EmotionBuilderGame from '../components/games/EmotionBuilderGame'
-import EmpathySimulatorGame from '../components/games/EmpathySimulatorGame'
 import SocialStrategistGame from '../components/games/SocialStrategistGame'
 import CalmQuestGame from '../components/games/CalmQuestGame'
 import ConversationGame from '../components/games/ConversationGame'
@@ -22,19 +19,7 @@ import ConversationGame from '../components/games/ConversationGame'
 const MotionBox = motion(Box)
 const MotionCard = motion(Card)
 
-// Game data
 const games = [
-    {
-        id: 'social-detective',
-        title: 'Social Detective',
-        description: 'Read social cues and solve mysteries',
-        icon: Brain,
-        color: '#ef4444',
-        bgColor: '#fef2f2',
-        borderColor: '#fecaca',
-        difficulty: 'Hard',
-        points: 50
-    },
     {
         id: 'emotion-builder',
         title: 'Emotion Builder',
@@ -56,17 +41,6 @@ const games = [
         borderColor: '#bbf7d0',
         difficulty: 'Hard',
         points: 40
-    },
-    {
-        id: 'empathy-simulator',
-        title: 'Empathy Simulator',
-        description: 'Step into others\' shoes and understand their feelings',
-        icon: MessageCircle,
-        color: '#8b5cf6',
-        bgColor: '#faf5ff',
-        borderColor: '#e9d5ff',
-        difficulty: 'Hard',
-        points: 45
     },
     {
         id: 'calm-quest',
@@ -92,7 +66,6 @@ const games = [
     }
 ]
 
-// Progress tracking
 interface GameProgress {
     points: number
     streak: number
@@ -115,7 +88,6 @@ export default function EmotionGamesPage() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const toast = useToast()
 
-    // Load progress from localStorage
     useEffect(() => {
         const savedProgress = localStorage.getItem('emotionGamesProgress')
         if (savedProgress) {
@@ -123,7 +95,6 @@ export default function EmotionGamesPage() {
         }
     }, [])
 
-    // Save progress to localStorage
     const saveProgress = (newProgress: GameProgress) => {
         setProgress(newProgress)
         localStorage.setItem('emotionGamesProgress', JSON.stringify(newProgress))
@@ -134,7 +105,8 @@ export default function EmotionGamesPage() {
         onOpen()
     }
 
-    const handleGameComplete = (gameId: string, pointsEarned: number) => {
+    const handleGameComplete = (gameId: string | null, pointsEarned: number) => {
+        if (!gameId) return
         const game = games.find(g => g.id === gameId)
         if (!game) return
 
@@ -149,7 +121,6 @@ export default function EmotionGamesPage() {
             lastPlayed: new Date().toISOString()
         }
 
-        // Check for new badges
         const newBadges = []
         if (newProgress.points >= 100 && !progress.badges.includes('first-100')) {
             newBadges.push('first-100')
@@ -176,7 +147,7 @@ export default function EmotionGamesPage() {
 
     return (
         <Box minH='100vh' bgGradient='linear(to-br, #faf5ff, #f3e8ff, #e9d5ff)'>
-            <Container maxW='6xl' pt={20} pb={24}>
+            <Container maxW='6xl' pt={12} pb={16}>
                 {/* Header */}
                 <VStack spacing={4} mb={8}>
                     <motion.div
@@ -334,40 +305,28 @@ export default function EmotionGamesPage() {
                     </ModalHeader>
                     <ModalCloseButton color='white' />
                     <ModalBody p={6} overflowY='auto'>
-                        {selectedGame === 'social-detective' && (
-                            <SocialDetectiveGame 
-                                onComplete={handleGameComplete} 
-                                onClose={onClose} 
-                            />
-                        )}
                         {selectedGame === 'emotion-builder' && (
                             <EmotionBuilderGame 
-                                onComplete={handleGameComplete} 
-                                onClose={onClose} 
+                                onComplete={(points) => handleGameComplete('emotion-builder', points)} 
+                                onClose={onClose}
                             />
                         )}
                         {selectedGame === 'conversation-master' && (
                             <ConversationGame 
-                                onComplete={handleGameComplete} 
-                                onClose={onClose} 
-                            />
-                        )}
-                        {selectedGame === 'empathy-simulator' && (
-                            <EmpathySimulatorGame 
-                                onComplete={handleGameComplete} 
-                                onClose={onClose} 
+                                onComplete={(points) => handleGameComplete('conversation-master', points)} 
+                                onClose={onClose}
                             />
                         )}
                         {selectedGame === 'calm-quest' && (
                             <CalmQuestGame 
-                                onComplete={handleGameComplete} 
-                                onClose={onClose} 
+                                onComplete={(points) => handleGameComplete('calm-quest', points)} 
+                                onClose={onClose}
                             />
                         )}
                         {selectedGame === 'social-strategist' && (
                             <SocialStrategistGame 
-                                onComplete={handleGameComplete} 
-                                onClose={onClose} 
+                                onComplete={(points) => handleGameComplete('social-strategist', points)} 
+                                onClose={onClose}
                             />
                         )}
                     </ModalBody>

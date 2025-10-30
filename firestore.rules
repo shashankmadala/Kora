@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write access to authenticated users for posts
+    match /posts/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow read/write access to authenticated users for profiles
+    match /profiles/{document} {
+      allow read, write: if request.auth != null && request.auth.uid == document;
+    }
+    
+    // Allow read/write access to authenticated users for chat history
+    match /chatHistory/{document} {
+      allow read, write: if request.auth != null && request.auth.uid == document;
+    }
+    
+    // Allow read/write access to authenticated users for comments
+    match /comments/{document} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+
+
+
+
+
+

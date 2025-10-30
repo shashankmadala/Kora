@@ -23,9 +23,9 @@ export default function CalmQuestGame({ onComplete, onClose }: CalmQuestGameProp
     const toast = useToast()
     
     const totalCycles = 6
-    const inhaleDuration = 4000 // 4 seconds
-    const exhaleDuration = 4000 // 4 seconds
-    const holdDuration = 2000 // 2 seconds
+    const inhaleDuration = 4000
+    const exhaleDuration = 4000
+    const holdDuration = 2000
     const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
     const startBreathing = () => {
@@ -44,20 +44,16 @@ export default function CalmQuestGame({ onComplete, onClose }: CalmQuestGameProp
             return
         }
 
-        // Inhale phase
         setIsInhaling(true)
         setTimeout(() => {
-            // Hold phase
             setTimeout(() => {
-                // Exhale phase
                 setIsInhaling(false)
                 setTimeout(() => {
-                    // Complete cycle
                     setCurrentCycle(prev => prev + 1)
                     setStars(prev => prev + 1)
                     
                     if (currentCycle + 1 < totalCycles) {
-                        setTimeout(() => startCycle(), 1000) // Brief pause between cycles
+                        setTimeout(() => startCycle(), 1000)
                     } else {
                         setGameComplete(true)
                         const points = Math.floor((stars + 1) * 2)
@@ -357,4 +353,7 @@ export default function CalmQuestGame({ onComplete, onClose }: CalmQuestGameProp
         </VStack>
     )
 }
+
+
+
 

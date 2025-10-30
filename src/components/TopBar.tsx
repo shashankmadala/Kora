@@ -17,8 +17,8 @@ export default function TopBar() {
     return (
         <>
             <Box 
-                h='72px' 
-                bg='rgba(255, 255, 255, 0.8)'
+                h='50px' 
+                bg='rgba(255, 255, 255, 0.9)'
                 backdropFilter='blur(20px)'
                 borderBottom='1px solid rgba(255, 255, 255, 0.2)'
                 display='flex' 
@@ -30,36 +30,36 @@ export default function TopBar() {
                 left={0}
                 right={0}
                 w='100%' 
-                px={6} 
+                px={3} 
                 zIndex={1000} 
-                boxShadow='0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                boxShadow='0 2px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05)'
             >
-                <HStack spacing={4}>
+                <HStack spacing={2}>
                     <Box
-                        p={3}
-                        borderRadius='16px'
+                        p={1.5}
+                        borderRadius='10px'
                         bgGradient='linear(135deg, #a855f7, #7c3aed)'
-                        boxShadow='0 4px 12px rgba(168, 85, 247, 0.3)'
+                        boxShadow='0 1px 4px rgba(168, 85, 247, 0.3)'
                         position='relative'
                     >
-                        <Icon as={Brain} boxSize={6} color='white' />
+                        <Icon as={Brain} boxSize={4} color='white' />
                         <Box
                             position='absolute'
-                            top={-1}
-                            right={-1}
-                            w={3}
-                            h={3}
+                            top={-0.5}
+                            right={-0.5}
+                            w={1.5}
+                            h={1.5}
                             bg='#10b981'
                             borderRadius='full'
-                            border='2px solid white'
+                            border='1px solid white'
                         />
                     </Box>
                     <VStack align='start' spacing={0}>
-                        <Text fontSize='xl' fontWeight='800' color='#1f2937' letterSpacing='-0.02em'>
+                        <Text fontSize='md' fontWeight='800' color='#1f2937' letterSpacing='-0.02em'>
                             Kora AI
                         </Text>
-                        <Text fontSize='xs' color='#6b7280' fontWeight='500'>
-                            Next-Gen Autism Support
+                        <Text fontSize='3xs' color='#6b7280' fontWeight='500'>
+                            Autism Support
                         </Text>
                     </VStack>
                 </HStack>

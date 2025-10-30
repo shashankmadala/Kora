@@ -9,7 +9,6 @@ import { MessageCircle, CheckCircle, RotateCcw, Eye, Brain, Users, ArrowRight } 
 const MotionBox = motion(Box)
 const MotionButton = motion(Button)
 
-// Social Skills Practice scenarios
 const scenarios = [
     {
         id: 1,

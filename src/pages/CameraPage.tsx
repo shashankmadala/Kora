@@ -77,7 +77,6 @@ export default function CameraPage() {
             
             img.onload = async () => {
                 try {
-                    // Preprocess image for the model
                     const canvas = document.createElement('canvas')
                     const ctx = canvas.getContext('2d')
                     canvas.width = 224
@@ -87,17 +86,14 @@ export default function CameraPage() {
                         ctx.drawImage(img, 0, 0, 224, 224)
                         const imageData = ctx.getImageData(0, 0, 224, 224)
                         
-                        // Convert to tensor
                         const tensor = tf.browser.fromPixels(imageData)
                             .resizeNearestNeighbor([224, 224])
                             .expandDims(0)
                             .div(255.0)
 
-                        // Make prediction
                         const prediction = model.predict(tensor) as tf.Tensor
                         const data = await prediction.data()
                         
-                        // Process results
                         const emotions = ['Happy', 'Sad', 'Angry', 'Fear', 'Neutral']
                         const results: Prediction[] = emotions.map((emotion, index) => ({
                             emotion,
@@ -109,7 +105,6 @@ export default function CameraPage() {
                         setPredictions(results)
                         setLoading(false)
                         
-                        // Clean up
                         tensor.dispose()
                         prediction.dispose()
                     }
@@ -205,7 +200,6 @@ export default function CameraPage() {
     return (
         <Box minHeight='100vh' bgGradient='linear(to-br, #faf5ff, #f3e8ff, #e9d5ff)'>
             <Container maxW='container.xl' pt={20} pb={24} px={4}>
-                {/* Header */}
                 <MotionBox
                     textAlign='center'
                     mb={8}
@@ -268,9 +262,7 @@ export default function CameraPage() {
                     </HStack>
                 </MotionBox>
 
-                {/* Main Content */}
                 <VStack spacing={6}>
-                    {/* Camera Section */}
                     {!hasTakenPhoto && !loading && (
                         <ScaleFade initialScale={0.9} in={true}>
                             <Card 
@@ -323,7 +315,6 @@ export default function CameraPage() {
                         </ScaleFade>
                     )}
 
-                    {/* Loading State */}
                     {loading && (
                         <ScaleFade initialScale={0.9} in={true}>
                             <Card 
@@ -349,7 +340,6 @@ export default function CameraPage() {
                         </ScaleFade>
                     )}
 
-                    {/* Error State */}
                     {error && (
                         <ScaleFade initialScale={0.9} in={true}>
                             <Card 
@@ -389,11 +379,9 @@ export default function CameraPage() {
                         </ScaleFade>
                     )}
 
-                    {/* Results */}
                     {hasTakenPhoto && predictions.length > 0 && !loading && (
                         <ScaleFade initialScale={0.9} in={true}>
                             <VStack spacing={6} w='full'>
-                                {/* Image and Top Emotion */}
                                 <Card 
                                     bg='white' 
                                     borderRadius='20px' 
@@ -470,7 +458,6 @@ export default function CameraPage() {
                                     </VStack>
                                 </Card>
 
-                                {/* All Emotions */}
                                 <Card 
                                     bg='white' 
                                     borderRadius='20px' 
@@ -515,7 +502,6 @@ export default function CameraPage() {
                                     </VStack>
                                 </Card>
 
-                                {/* Action Buttons */}
                                 <HStack spacing={4} w='full'>
                                     <Button
                                         leftIcon={<RotateCcw />}

@@ -26,9 +26,9 @@ export default function PostCard(props: Post) {
             <CardBody mt={-8} mb={-6}>
                 <Text fontSize='small' color='grey'>{props.content}</Text>
                 <Flex gap={4} flexWrap='wrap' mt={4}>
-                    {props.tags.map(tag => {
+                    {props.tags.map((tag, index) => {
                         return (
-                            <Tag colorScheme='purple'>{tag}</Tag>
+                            <Tag key={index} colorScheme='purple'>{tag}</Tag>
                         )
                     })}
                 </Flex>

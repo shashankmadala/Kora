@@ -1,849 +1,933 @@
-import { useState, useEffect } from 'react'
 import { 
-    Box, 
-    Container, 
-    VStack, 
-    HStack, 
-    Heading, 
-    Text, 
-    Input, 
-    Button, 
-    Badge, 
-    Flex, 
-    Icon, 
-    useDisclosure,
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalCloseButton,
-    ScaleFade,
-    Spinner,
-    Center,
-    SimpleGrid,
-    Card,
-    CardBody,
-    Divider
+    Box, VStack, HStack, Text, Heading, Button, SimpleGrid, 
+    Card, CardBody, Icon, Badge, Container, useDisclosure,
+    Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton,
+    Image, Spinner, useToast, Input, InputGroup, InputLeftElement,
+    Flex, Divider, Link as ChakraLink, ScaleFade
 } from '@chakra-ui/react'
-import { 
-    MapPin, 
-    Search, 
-    Heart, 
-    Phone, 
-    Navigation, 
-    Globe, 
-    Filter,
-    Map,
-    List,
-    Star,
-    Clock,
-    Users,
-    Accessibility
-} from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import ResourceDetail from '../components/ResourceDetail'
-import MapView from '../components/MapView'
+import { 
+    MapPin, Search, ExternalLink, Phone, Mail, Globe, 
+    Heart, Brain, Users, BookOpen, Calendar, Clock,
+    Star, Award, Navigation, Filter, SortAsc
+} from 'lucide-react'
 
-const MotionBox = motion(Box)
+const MotionBox = motion(Box as any)
+const MotionCard = motion(Card as any)
 
 interface Resource {
-    id: string
+    id: number
     name: string
-    type: string[]
+    category: string
+    zipCode?: string
+    description: string
     address: string
     phone: string
-    website?: string
-    distance: number
-    acceptingNew: boolean
-    medicaidFriendly: boolean
-    telehealth: boolean
-    wheelchairAccessible: boolean
-    languages: string[]
-    hours: string
+    website: string
+    tags: string[]
     rating?: number
-    verified: string
-    services?: string[]
-    ageRange?: string
-    insurance?: string[]
-    accessibility?: string[]
-    intakeProcess?: string
-    lat: number
-    lng: number
+    distance?: string
 }
 
-const mockResources: Resource[] = [
-    {
-        id: '1',
-        name: 'Autism Center of New Jersey',
-        type: ['ABA', 'Speech', 'OT', 'Diagnostic'],
-        address: '123 Main St, Newark, NJ 07102',
-        phone: '(973) 555-0123',
-        website: 'https://autismcenter-nj.org',
-        distance: 2.3,
-        acceptingNew: true,
-        medicaidFriendly: true,
-        telehealth: true,
-        wheelchairAccessible: true,
-        languages: ['English', 'Spanish'],
-        hours: 'Mon-Fri 8AM-6PM',
-        rating: 4.8,
-        verified: '2024-01-15',
-        services: [
-            'Applied Behavior Analysis (ABA)',
-            'Speech and Language Therapy',
-            'Occupational Therapy',
-            'Autism Diagnostic Evaluations',
-            'Social Skills Groups',
-            'Parent Training'
-        ],
-        ageRange: '2-18 years',
-        insurance: ['Medicaid', 'Aetna', 'Blue Cross Blue Shield', 'Cigna'],
-        accessibility: ['Wheelchair accessible', 'Sensory-friendly environment', 'Quiet rooms available'],
-        intakeProcess: 'Call to schedule initial consultation. Bring insurance card and any previous evaluations.',
-        lat: 40.7357,
-        lng: -74.1724
-    },
-    {
-        id: '2',
-        name: 'Hope Speech Therapy',
-        type: ['Speech', 'OT'],
-        address: '456 Oak Ave, Jersey City, NJ 07302',
-        phone: '(201) 555-0456',
-        distance: 5.7,
-        acceptingNew: false,
-        medicaidFriendly: true,
-        telehealth: false,
-        wheelchairAccessible: true,
-        languages: ['English'],
-        hours: 'Mon-Thu 9AM-5PM',
-        rating: 4.6,
-        verified: '2024-01-10',
-        services: [
-            'Speech and Language Therapy',
-            'Occupational Therapy',
-            'Feeding Therapy',
-            'Augmentative Communication'
-        ],
-        ageRange: '0-21 years',
-        insurance: ['Medicaid', 'Aetna', 'Blue Cross Blue Shield'],
-        accessibility: ['Wheelchair accessible', 'Ground floor entrance'],
-        intakeProcess: 'Currently not accepting new patients. Join waitlist by calling or emailing.',
-        lat: 40.7178,
-        lng: -74.0431
-    },
-    {
-        id: '3',
-        name: 'Bright Futures ABA',
-        type: ['ABA', 'Diagnostic'],
-        address: '789 Pine St, Paterson, NJ 07501',
-        phone: '(973) 555-0789',
-        website: 'https://brightfutures-aba.com',
-        distance: 8.2,
-        acceptingNew: true,
-        medicaidFriendly: false,
-        telehealth: true,
-        wheelchairAccessible: false,
-        languages: ['English', 'Spanish', 'Portuguese'],
-        hours: 'Mon-Fri 7AM-7PM',
-        rating: 4.9,
-        verified: '2024-01-20',
-        services: [
-            'Applied Behavior Analysis (ABA)',
-            'Autism Diagnostic Evaluations',
-            'Early Intervention Services',
-            'School Consultation',
-            'Behavioral Assessments'
-        ],
-        ageRange: '18 months - 12 years',
-        insurance: ['Aetna', 'Blue Cross Blue Shield', 'Cigna', 'UnitedHealthcare'],
-        accessibility: ['Second floor - no elevator', 'Sensory-friendly environment'],
-        intakeProcess: 'Complete online intake form, then schedule assessment appointment.',
-        lat: 40.9168,
-        lng: -74.1718
-    }
+const categories = [
+    { id: 'therapy', label: 'Therapy Centers', icon: Heart, color: '#ef4444' },
+    { id: 'education', label: 'Specialized Schools', icon: BookOpen, color: '#3b82f6' },
+    { id: 'support', label: 'Support & Advocacy', icon: Users, color: '#10b981' },
+    { id: 'early', label: 'Early Intervention', icon: Calendar, color: '#f59e0b' }
 ]
 
-const filterOptions = [
-    'ABA', 'Speech', 'OT', 'Diagnostic', 'Telehealth', 
-    'Medicaid-friendly', 'Accepting new patients', 
-    'Wheelchair-accessible', 'English', 'Spanish'
+const njResources: Resource[] = [
+    {
+        id: 1,
+        name: 'Believe in Me Developmental Therapy Center',
+        category: 'therapy',
+        zipCode: '07869',
+        description: 'Therapeutic preschool and developmental therapy services for children with autism.',
+        address: 'Randolph, NJ',
+        phone: '(973) 216-1008',
+        website: 'https://believeinmetherapy.com',
+        tags: ['ABA therapy', 'therapeutic preschool', 'developmental']
+    },
+    {
+        id: 2,
+        name: 'Proud Moments ABA – Teaneck Center',
+        category: 'therapy',
+        zipCode: '07666',
+        description: 'Specialized ABA therapy clinic providing comprehensive behavioral intervention services.',
+        address: 'Teaneck, NJ',
+        phone: '551-363-3303',
+        website: 'https://proudmomentsaba.com',
+        tags: ['ABA therapy', 'behavioral intervention', 'autism']
+    },
+    {
+        id: 3,
+        name: 'Good Talking People',
+        category: 'therapy',
+        zipCode: '07666',
+        description: 'Social skills therapy and communication support services for individuals with autism.',
+        address: 'Teaneck, NJ',
+        phone: '201-837-8371',
+        website: 'https://njkidsonline.com',
+        tags: ['social skills', 'communication', 'speech therapy']
+    },
+    {
+        id: 4,
+        name: 'The Therapy Gym',
+        category: 'therapy',
+        zipCode: '07666',
+        description: 'Pediatric therapy center offering comprehensive therapy services.',
+        address: 'Teaneck, NJ',
+        phone: '201-357-0417',
+        website: 'https://njkidsonline.com',
+        tags: ['pediatric therapy', 'occupational therapy', 'physical therapy']
+    },
+    {
+        id: 5,
+        name: 'Achieve Beyond Pediatric Therapy',
+        category: 'therapy',
+        zipCode: '08837',
+        description: 'Multi-site pediatric therapy provider offering comprehensive services.',
+        address: 'Edison, NJ',
+        phone: '(888) 261-1110',
+        website: 'https://njkidsonline.com',
+        tags: ['pediatric therapy', 'multi-site', 'comprehensive services']
+    },
+    {
+        id: 6,
+        name: 'New Direction ABA',
+        category: 'therapy',
+        zipCode: '07071',
+        description: 'ABA services agency providing behavioral support and intervention.',
+        address: 'Lyndhurst, NJ',
+        phone: '201-577-1443',
+        website: 'https://njkidsonline.com',
+        tags: ['ABA services', 'behavioral support', 'intervention']
+    },
+    {
+        id: 7,
+        name: 'NeurAbilities Healthcare – Autism Center',
+        category: 'therapy',
+        zipCode: '08002',
+        description: 'Autism center providing healthcare and therapy services.',
+        address: 'Cherry Hill, NJ',
+        phone: '856-346-0005',
+        website: 'https://neurabilities.com',
+        tags: ['autism center', 'healthcare', 'therapy services']
+    },
+    {
+        id: 8,
+        name: 'Kaleidoscope ABA Therapy Center',
+        category: 'therapy',
+        zipCode: '08619',
+        description: 'ABA therapy center offering specialized behavioral intervention services.',
+        address: 'Hamilton (Trenton), NJ',
+        phone: '877-ABA-0399',
+        website: 'https://kfsaba.org',
+        tags: ['ABA therapy', 'behavioral intervention', 'autism']
+    },
+    {
+        id: 25,
+        name: 'Autism Learning Partners',
+        category: 'therapy',
+        zipCode: '07102',
+        description: 'ABA therapy provider offering in-home and clinic-based services for individuals with autism.',
+        address: 'Newark, NJ',
+        phone: '(888) 805-0759',
+        website: 'https://autismlearningpartners.com',
+        tags: ['ABA therapy', 'in-home services', 'autism']
+    },
+    {
+        id: 26,
+        name: 'Bierman Autism Centers',
+        category: 'therapy',
+        zipCode: '07052',
+        description: 'Therapy clinic providing comprehensive autism services and interventions.',
+        address: 'West Orange, NJ',
+        phone: '(908) 632-2068',
+        website: 'https://biermanautism.com',
+        tags: ['autism clinic', 'therapy services', 'comprehensive care']
+    },
+    {
+        id: 27,
+        name: 'Caldwell University Center for Autism & ABA',
+        category: 'therapy',
+        zipCode: '07006',
+        description: 'Assessment and therapy center providing ABA services and autism evaluations.',
+        address: 'Caldwell, NJ',
+        phone: '(973) 618-3373',
+        website: 'https://caldwell.edu',
+        tags: ['assessment', 'ABA therapy', 'university-based']
+    },
+    {
+        id: 28,
+        name: 'Children\'s Specialized Hospital – Newark',
+        category: 'therapy',
+        zipCode: '07112',
+        description: 'Pediatric outpatient center providing specialized therapy services for children with autism.',
+        address: 'Newark, NJ',
+        phone: '(973) 391-2960',
+        website: 'https://www.childrens-specialized.org',
+        tags: ['pediatric hospital', 'outpatient services', 'specialized care'],
+        rating: 4.8
+    },
+    
+    {
+        id: 9,
+        name: 'The Arc of New Jersey',
+        category: 'support',
+        zipCode: '08902',
+        description: 'Statewide advocacy organization providing support and resources for individuals with disabilities and their families.',
+        address: 'North Brunswick, NJ',
+        phone: '732-246-2525',
+        website: 'https://arcnj.org',
+        tags: ['advocacy', 'statewide', 'disability support']
+    },
+    {
+        id: 10,
+        name: 'Autism New Jersey',
+        category: 'support',
+        zipCode: '08691',
+        description: 'Helpline and resource center providing support and information for autism families.',
+        address: 'Robbinsville, NJ',
+        phone: '800-4-AUTISM',
+        website: 'https://njkidsonline.com',
+        tags: ['helpline', 'resources', 'family support']
+    },
+    {
+        id: 11,
+        name: 'POAC Autism Services',
+        category: 'support',
+        zipCode: '08724',
+        description: 'Parents of Autistic Children organization providing support and advocacy.',
+        address: 'Brick, NJ',
+        phone: '732-785-1099',
+        website: 'https://poac.net',
+        tags: ['parent organization', 'advocacy', 'support services']
+    },
+    {
+        id: 12,
+        name: 'Autism Family Services of NJ',
+        category: 'support',
+        zipCode: '08520',
+        description: 'Family Resource Network providing support and services for autism families.',
+        address: 'East Windsor, NJ',
+        phone: '800-372-6510',
+        website: 'https://familyresourcenetwork.org',
+        tags: ['family services', 'resource network', 'support']
+    },
+    {
+        id: 13,
+        name: 'Easterseals New Jersey',
+        category: 'support',
+        zipCode: '08831',
+        description: 'Adult and family support services for individuals with disabilities.',
+        address: 'Jamesburg, NJ',
+        phone: '732-257-6662',
+        website: 'https://nj.easterseals.com',
+        tags: ['adult services', 'family support', 'disabilities']
+    },
+    {
+        id: 14,
+        name: 'ASPEN (Asperger/Autism Educational Network)',
+        category: 'support',
+        zipCode: '08820',
+        description: 'Educational network providing support for Asperger and autism communities.',
+        address: 'Edison, NJ',
+        phone: '732-321-0880',
+        website: 'https://nidcd.nih.gov',
+        tags: ['educational network', 'Asperger support', 'autism support']
+    },
+    {
+        id: 15,
+        name: 'Eden Autism',
+        category: 'support',
+        zipCode: '08540',
+        description: 'Lifespan services and support providing comprehensive programs for individuals with autism throughout their lives.',
+        address: 'Princeton, NJ',
+        phone: '609-987-0099',
+        website: 'https://edenautism.org',
+        tags: ['lifespan services', 'comprehensive support', 'autism programs']
+    },
+    {
+        id: 29,
+        name: 'Nassan\'s Place',
+        category: 'support',
+        zipCode: '07019',
+        description: 'Autism family support non-profit providing resources and support for families affected by autism.',
+        address: 'East Orange, NJ',
+        phone: '(973) 424-7781',
+        website: 'https://nassansplace.org',
+        tags: ['family support', 'non-profit', 'autism resources']
+    },
+    {
+        id: 30,
+        name: 'Family Support Organization of Essex County',
+        category: 'support',
+        zipCode: '07018',
+        description: 'Parent and caregiver support organization providing services and resources for families.',
+        address: 'East Orange, NJ',
+        phone: '(973) 395-1595',
+        website: 'https://fsoec.org',
+        tags: ['parent support', 'caregiver support', 'family services']
+    },
+    {
+        id: 31,
+        name: 'SPAN Parent Advocacy Network',
+        category: 'support',
+        zipCode: '07102',
+        description: 'Special needs advocacy organization providing support and resources for families of children with disabilities.',
+        address: 'Newark, NJ',
+        phone: '(973) 642-8100',
+        website: 'https://spanadvocacy.org',
+        tags: ['parent advocacy', 'special needs', 'support services']
+    },
+    {
+        id: 32,
+        name: 'JVS – Jewish Vocational Service of MetroWest',
+        category: 'support',
+        zipCode: '07017',
+        description: 'Job training and vocational services for adults with autism spectrum disorders.',
+        address: 'East Orange, NJ',
+        phone: '(973) 674-6330',
+        website: 'https://jvsmetrowest.org',
+        tags: ['vocational training', 'adult services', 'job placement']
+    },
+    
+    {
+        id: 16,
+        name: 'Alpine Learning Group',
+        category: 'education',
+        zipCode: '07652',
+        description: 'ABA-based school and program providing specialized education for students with autism.',
+        address: 'Paramus, NJ',
+        phone: '(201) 612-7710',
+        website: 'https://njkidsonline.com',
+        tags: ['ABA school', 'specialized education', 'autism program']
+    },
+    {
+        id: 17,
+        name: 'The Phoenix Center',
+        category: 'education',
+        zipCode: '07110',
+        description: 'Special needs school providing education and support for children with disabilities.',
+        address: 'Nutley, NJ',
+        phone: '(973) 542-0743',
+        website: 'https://njkidsonline.com',
+        tags: ['special needs', 'education', 'disability support']
+    },
+    {
+        id: 18,
+        name: 'The Forum School',
+        category: 'education',
+        zipCode: '07463',
+        description: 'Autism-focused school providing specialized education and support services.',
+        address: 'Wyckoff, NJ',
+        phone: '201-445-5882',
+        website: 'https://njkidsonline.com',
+        tags: ['autism school', 'specialized education', 'support services']
+    },
+    {
+        id: 19,
+        name: 'The Bancroft School (Welsh Campus)',
+        category: 'education',
+        zipCode: '08054',
+        description: 'Private school providing specialized education for students with developmental disabilities.',
+        address: 'Mount Laurel, NJ',
+        phone: '856-429-0010',
+        website: 'https://school.bancroft.org',
+        tags: ['private school', 'developmental disabilities', 'specialized education']
+    },
+    {
+        id: 20,
+        name: 'Princeton Child Development Institute (PCDI)',
+        category: 'education',
+        zipCode: '08540',
+        description: 'Private school and research institute providing evidence-based education for children with autism.',
+        address: 'Princeton, NJ',
+        phone: '609-924-6280',
+        website: 'https://pcdi.org',
+        tags: ['research institute', 'evidence-based', 'autism education']
+    },
+    {
+        id: 33,
+        name: 'Branch Brook School',
+        category: 'education',
+        zipCode: '07104',
+        description: 'Newark Public Schools autism program serving students Pre-K through Grade 3.',
+        address: 'Newark, NJ',
+        phone: '(973) 268-5112',
+        website: 'https://www.newarkschools.org',
+        tags: ['public school', 'autism program', 'Pre-K to 3']
+    },
+    {
+        id: 34,
+        name: 'NJ Regional Day School – Newark',
+        category: 'education',
+        zipCode: '07112',
+        description: 'Autism-focused K-12 public school providing specialized education for students with autism.',
+        address: 'Newark, NJ',
+        phone: '(973) 705-3820',
+        website: 'https://www.njrsd.org',
+        tags: ['public school', 'autism-focused', 'K-12']
+    },
+    {
+        id: 35,
+        name: 'Academy360 Lower School',
+        category: 'education',
+        zipCode: '07044',
+        description: 'Private special education school serving students with autism ages 3-21 through Spectrum360.',
+        address: 'Verona, NJ',
+        phone: '(973) 509-3050',
+        website: 'https://spectrum360.org',
+        tags: ['private school', 'special education', 'ages 3-21']
+    },
+    {
+        id: 36,
+        name: 'Garden Academy',
+        category: 'education',
+        zipCode: '07052',
+        description: 'Non-profit ABA school providing specialized education and therapy for students with autism.',
+        address: 'West Orange, NJ',
+        phone: '(973) 731-2030',
+        website: 'https://gardenacademy.org',
+        tags: ['non-profit', 'ABA school', 'autism education'],
+        rating: 4.3
+    },
+    {
+        id: 37,
+        name: 'Mt. Carmel Guild Academy',
+        category: 'education',
+        zipCode: '07052',
+        description: 'Catholic Charities special education school providing comprehensive programs for students with autism.',
+        address: 'West Orange, NJ',
+        phone: '(973) 325-4400',
+        website: 'https://catholiccharitiesusa.org',
+        tags: ['private school', 'special education', 'Catholic Charities']
+    },
+    {
+        id: 38,
+        name: 'Deron School of New Jersey (Montclair Campus)',
+        category: 'education',
+        zipCode: '07042',
+        description: 'Private special education school providing individualized programs for students with autism.',
+        address: 'Montclair, NJ',
+        phone: '(973) 509-2777',
+        website: 'https://deronschool.org',
+        tags: ['private school', 'special education', 'Montclair']
+    },
+    {
+        id: 39,
+        name: 'YCS Sawtelle Learning Center',
+        category: 'education',
+        zipCode: '07042',
+        description: 'Autism spectrum school providing specialized education and support services.',
+        address: 'Montclair, NJ',
+        phone: '(973) 744-0615',
+        website: 'https://ycs.org',
+        tags: ['autism school', 'specialized education', 'support services']
+    },
+    {
+        id: 40,
+        name: 'Lakeside School',
+        category: 'education',
+        zipCode: '07050',
+        description: 'Autism program serving students ages 14-21 with specialized education and life skills training.',
+        address: 'Orange, NJ',
+        phone: '(973) 678-7778',
+        website: 'https://lakesideschool-nj.org',
+        tags: ['autism program', 'ages 14-21', 'life skills']
+    },
+    {
+        id: 41,
+        name: 'Irvington Special Services Autism Programs',
+        category: 'education',
+        zipCode: '07111',
+        description: 'Public school district autism programs providing specialized services for students with autism.',
+        address: 'Irvington, NJ',
+        phone: '(973) 399-6810',
+        website: 'https://www.irvingtonschools.org',
+        tags: ['public school district', 'autism programs', 'special services']
+    },
+    {
+        id: 42,
+        name: 'The Center for Autism',
+        category: 'education',
+        zipCode: '07107',
+        description: 'Adult day program providing services and support for adults with autism.',
+        address: 'Newark, NJ',
+        phone: '(973) 732-9301',
+        website: 'https://thecenterforautism.org',
+        tags: ['adult day program', 'adult services', 'Newark']
+    },
+    
+    {
+        id: 21,
+        name: 'Northeast NJ Early Intervention – Helpful Hands REIC',
+        category: 'early',
+        zipCode: '07470',
+        description: 'Regional Early Intervention Collaborative (REIC) serving infants and toddlers up to age 3 in Bergen, Hudson, and Passaic counties.',
+        address: 'Wayne, NJ',
+        phone: '973-256-8484',
+        website: 'https://nreic.org',
+        tags: ['early intervention', 'regional program', 'infants & toddlers']
+    },
+    {
+        id: 22,
+        name: 'Mid-Jersey CARES Early Intervention REIC',
+        category: 'early',
+        zipCode: '08902',
+        description: 'Regional Early Intervention Collaborative (REIC) serving infants and toddlers up to age 3 in Central New Jersey.',
+        address: 'North Brunswick, NJ',
+        phone: '732-937-5437',
+        website: 'https://birthtofivenavigator.org',
+        tags: ['early intervention', 'central NJ', 'infants & toddlers']
+    },
+    {
+        id: 23,
+        name: 'Family Link Early Intervention REIC',
+        category: 'early',
+        zipCode: '07083',
+        description: 'Regional Early Intervention Collaborative (REIC) serving infants and toddlers up to age 3 in Essex, Morris, and Union counties.',
+        address: 'Union, NJ',
+        phone: '908-964-5303',
+        website: 'https://childcareconnection-nj.org',
+        tags: ['early intervention', 'regional program', 'infants & toddlers']
+    },
+    {
+        id: 24,
+        name: 'Southern NJ Early Intervention REIC',
+        category: 'early',
+        zipCode: '08009',
+        description: 'Regional Early Intervention Collaborative (REIC) serving infants and toddlers up to age 3 in South Jersey.',
+        address: 'Berlin, NJ',
+        phone: '856-768-6747',
+        website: 'https://www.state.nj.us/humanservices',
+        tags: ['early intervention', 'south jersey', 'regional program']
+    },
+    {
+        id: 43,
+        name: 'Rutgers NJMS Early Intervention Program',
+        category: 'early',
+        zipCode: '07103',
+        description: 'Early intervention evaluations and services for children in Essex County through Rutgers New Jersey Medical School.',
+        address: 'Newark, NJ',
+        phone: '(973) 972-8187',
+        website: 'https://njms.rutgers.edu',
+        tags: ['early intervention', 'evaluations', 'Essex County']
+    },
+    {
+        id: 44,
+        name: 'Ben Samuels Children\'s Center (Montclair State University)',
+        category: 'early',
+        zipCode: '07043',
+        description: 'Early intervention program providing services and support for infants and toddlers with developmental needs.',
+        address: 'Montclair, NJ',
+        phone: '(973) 655-7366',
+        website: 'https://www.montclair.edu',
+        tags: ['early intervention', 'university-based', 'Montclair State']
+    }
 ]
 
 export default function ResourcesPage() {
+    const [selectedCategory, setSelectedCategory] = useState<string>('all')
     const [searchQuery, setSearchQuery] = useState('')
-    const [selectedFilters, setSelectedFilters] = useState<string[]>([])
-    const [viewMode, setViewMode] = useState<'map' | 'list'>('list')
-    const [resources, setResources] = useState<Resource[]>([])
-    const [loading, setLoading] = useState(false)
-    const [savedResources, setSavedResources] = useState<string[]>([])
-    const [showLocationPrompt, setShowLocationPrompt] = useState(true)
-    const [selectedResource, setSelectedResource] = useState<Resource | null>(null)
-    const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
-    const [locationError, setLocationError] = useState<string | null>(null)
-    const [isRequestingLocation, setIsRequestingLocation] = useState(false)
-    
+    const [filteredResources, setFilteredResources] = useState(njResources)
+    const [selectedResource, setSelectedResource] = useState<any>(null)
     const { isOpen, onOpen, onClose } = useDisclosure()
-    const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure()
+    const [isLoading, setIsLoading] = useState(false)
+    const toast = useToast()
 
     useEffect(() => {
-        // Check if user has seen location prompt before
-        const hasSeenPrompt = localStorage.getItem('kora-location-prompt-seen')
-        if (hasSeenPrompt) {
-            setShowLocationPrompt(false)
+        let filtered = njResources
+
+        if (selectedCategory !== 'all') {
+            filtered = filtered.filter(resource => resource.category === selectedCategory)
         }
-    }, [])
 
-    const handleSearch = async () => {
-        setLoading(true)
-        setLocationError(null)
-
-        try {
-            let searchLocation = userLocation
-
-            // If user entered a search query, geocode it
-            if (searchQuery.trim()) {
-                searchLocation = await geocodeAddress(searchQuery)
-                setUserLocation(searchLocation)
-            }
-
-            // If no location available, use default NJ-10 location
-            if (!searchLocation) {
-                searchLocation = { lat: 40.7357, lng: -74.1724 }
-            }
-
-            // In production, this would be a real API call to get nearby resources
-            // For now, we'll use mock data but calculate real distances
-            const resourcesWithDistance = mockResources.map(resource => ({
-                ...resource,
-                // Calculate distance from user location (simplified)
-                distance: Math.round((Math.random() * 20 + 1) * 10) / 10
-            }))
-
-            // Sort by distance
-            resourcesWithDistance.sort((a, b) => a.distance - b.distance)
-
-            setResources(resourcesWithDistance)
-        } catch (error) {
-            setLocationError('Unable to find resources. Please try again.')
-            console.error('Search error:', error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const toggleFilter = (filter: string) => {
-        setSelectedFilters(prev => 
-            prev.includes(filter) 
-                ? prev.filter(f => f !== filter)
-                : [...prev, filter]
-        )
-    }
-
-    const toggleSaved = (resourceId: string) => {
-        setSavedResources(prev => 
-            prev.includes(resourceId)
-                ? prev.filter(id => id !== resourceId)
-                : [...prev, resourceId]
-        )
-    }
-
-    const getCurrentLocation = (): Promise<{lat: number, lng: number}> => {
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                reject(new Error('Geolocation is not supported by this browser'))
-                return
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    resolve({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    })
-                },
-                (error) => {
-                    let errorMessage = 'Unable to get your location'
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage = 'Location access denied by user'
-                            break
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage = 'Location information unavailable'
-                            break
-                        case error.TIMEOUT:
-                            errorMessage = 'Location request timed out'
-                            break
-                    }
-                    reject(new Error(errorMessage))
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 300000 // 5 minutes
-                }
+        if (searchQuery) {
+            filtered = filtered.filter(resource => 
+                resource.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                resource.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                resource.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                resource.zipCode?.includes(searchQuery)
             )
-        })
-    }
-
-    const geocodeAddress = async (address: string): Promise<{lat: number, lng: number}> => {
-        // For now, return a default location for NJ-10 area
-        // In production, you'd use Google Geocoding API
-        return new Promise((resolve) => {
-            // Default to Newark, NJ (center of NJ-10)
-            resolve({ lat: 40.7357, lng: -74.1724 })
-        })
-    }
-
-    const handleLocationChoice = async (choice: 'precise' | 'approximate' | 'manual') => {
-        localStorage.setItem('kora-location-prompt-seen', 'true')
-        setShowLocationPrompt(false)
-        setIsRequestingLocation(true)
-        setLocationError(null)
-
-        try {
-            if (choice === 'precise') {
-                const location = await getCurrentLocation()
-                setUserLocation(location)
-                // Auto-search with location
-                handleSearch()
-            } else if (choice === 'approximate') {
-                // Use IP-based location or default to NJ-10
-                setUserLocation({ lat: 40.7357, lng: -74.1724 })
-            }
-            // For manual, user will enter address/ZIP in search
-        } catch (error) {
-            setLocationError(error instanceof Error ? error.message : 'Location error')
-            console.error('Location error:', error)
-        } finally {
-            setIsRequestingLocation(false)
         }
+
+        setFilteredResources(filtered)
+    }, [selectedCategory, searchQuery])
+
+    const handleResourceClick = (resource: any) => {
+        setSelectedResource(resource)
+        onOpen()
+    }
+
+    const handleCallResource = (phone: string) => {
+        window.open(`tel:${phone}`, '_self')
+    }
+
+    const handleVisitWebsite = (website: string) => {
+        window.open(website, '_blank', 'noopener,noreferrer')
     }
 
     return (
-        <Box minHeight='100vh' bg='#f9fafb'>
-            <Container maxW='container.xl' pt={{ base: 24, md: 28 }} pb={20}>
+        <Container maxW='6xl' py={6} px={4} pb={10}>
+            <VStack spacing={6} align='stretch'>
                 {/* Header */}
-                <ScaleFade initialScale={0.9} in={true}>
-                    <Box 
-                        bg='white'
-                        borderRadius='24px'
-                        p={8}
-                        mb={8}
-                        boxShadow='0 4px 6px rgba(0, 0, 0, 0.05)'
-                        border='1px solid #e5e7eb'
-                    >
-                        <VStack spacing={6}>
-                            <HStack spacing={4} align='center' w='full'>
-                                <Box
-                                    p={3}
-                                    borderRadius='16px'
-                                    bg='#f0f9ff'
-                                    border='1px solid #e0f2fe'
-                                >
-                                    <Icon as={MapPin} boxSize={6} color='#0ea5e9' />
-                                </Box>
-                                <VStack spacing={1} align='start' flex='1'>
-                                    <Heading size='xl' color='#111827' fontWeight='700'>
-                                        Find Resources
-                                    </Heading>
-                                    <Text color='#6b7280' fontSize='md' fontWeight='400'>
-                                        Discover autism services near you in NJ-10
-                                    </Text>
-                                </VStack>
-                                <Button
-                                    variant='secondary'
-                                    leftIcon={<Heart />}
-                                    onClick={onOpen}
-                                >
-                                    Saved
-                                </Button>
-                            </HStack>
+                <VStack spacing={3} textAlign='center'>
+                    <Heading size='2xl' color='#1f2937' fontWeight='700'>
+                        Autism Support Resources
+                            </Heading>
+                    <Text fontSize='lg' color='#6b7280' maxW='3xl'>
+                        Discover comprehensive autism support services across New Jersey. 
+                        Find therapy centers, schools, advocacy groups, and early intervention programs near you.
+                    </Text>
+                </VStack>
 
-                            {/* Search Input */}
-                            <HStack spacing={3} w='full'>
-                                <Input
-                                    placeholder='Enter ZIP code or address...'
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    variant='outline'
-                                    size='lg'
-                                    flex='1'
-                                />
-                                <Button
-                                    variant='primary'
-                                    leftIcon={<Search />}
-                                    onClick={handleSearch}
-                                    size='lg'
-                                    px={8}
-                                >
-                                    Find Resources
-                                </Button>
-                            </HStack>
+                {/* Search and Filter */}
+                <VStack spacing={4} w='full'>
+                    {/* Search Bar */}
+                    <InputGroup size='lg' maxW='2xl' mx='auto'>
+                            <InputLeftElement pointerEvents='none'>
+                            <Icon as={Search} color='#9ca3af' />
+                            </InputLeftElement>
+                            <Input
+                            placeholder='Search by name, service, location, or zip code...'
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                bg='white'
+                                border='2px solid #e5e7eb'
+                            borderRadius='12px'
+                            fontSize='md'
+                            _hover={{ borderColor: '#9ca3af' }}
+                            _focus={{ borderColor: '#8b5cf6', boxShadow: '0 0 0 3px rgba(139, 92, 246, 0.1)' }}
+                            />
+                        </InputGroup>
 
-                            {/* Filter Chips */}
-                            <Box w='full'>
-                                <Text color='#374151' fontWeight='600' mb={3} fontSize='sm'>
-                                    Filter by service type:
-                                </Text>
-                                <Flex wrap='wrap' gap={2}>
-                                    {filterOptions.map((filter) => (
-                                        <Badge
-                                            key={filter}
-                                            px={3}
-                                            py={1}
-                                            borderRadius='full'
-                                            bg={selectedFilters.includes(filter) ? '#0ea5e9' : '#f3f4f6'}
-                                            color={selectedFilters.includes(filter) ? 'white' : '#374151'}
-                                            border={selectedFilters.includes(filter) ? '1px solid #0284c7' : '1px solid #e5e7eb'}
-                                            cursor='pointer'
-                                            onClick={() => toggleFilter(filter)}
-                                            _hover={{
-                                                bg: selectedFilters.includes(filter) ? '#0284c7' : '#e5e7eb'
-                                            }}
-                                            fontSize='sm'
-                                            fontWeight='500'
-                                        >
-                                            {filter}
-                                        </Badge>
-                                    ))}
-                                </Flex>
-                            </Box>
+                    {/* Category Filters */}
+                    <HStack spacing={4} wrap='wrap' justify='center'>
+                        <Button
+                            key='all'
+                            size='md'
+                            variant={selectedCategory === 'all' ? 'solid' : 'outline'}
+                            colorScheme={selectedCategory === 'all' ? 'purple' : 'gray'}
+                            borderRadius='full'
+                            onClick={() => setSelectedCategory('all')}
+                            leftIcon={<Icon as={Filter} boxSize={4} />}
+                        >
+                            All Resources
+                        </Button>
+                        {categories.map((category) => (
+                            <Button
+                                key={category.id}
+                                size='md'
+                                variant={selectedCategory === category.id ? 'solid' : 'outline'}
+                                colorScheme={selectedCategory === category.id ? 'purple' : 'gray'}
+                                borderRadius='full'
+                                onClick={() => setSelectedCategory(category.id)}
+                                leftIcon={<Icon as={category.icon} boxSize={4} />}
+                            >
+                                {category.label}
+                            </Button>
+                        ))}
+                    </HStack>
+                </VStack>
 
-                            {/* View Toggle */}
-                            <HStack spacing={2} w='full' justify='center'>
-                                <Button
-                                    variant={viewMode === 'map' ? 'primary' : 'secondary'}
-                                    leftIcon={<Map />}
-                                    onClick={() => setViewMode('map')}
-                                >
-                                    Map
-                                </Button>
-                                <Button
-                                    variant={viewMode === 'list' ? 'primary' : 'secondary'}
-                                    leftIcon={<List />}
-                                    onClick={() => setViewMode('list')}
-                                >
-                                    List
-                                </Button>
-                            </HStack>
-                        </VStack>
-                    </Box>
-                </ScaleFade>
+                {/* Results Summary */}
+                <HStack justify='space-between' align='center' px={2} mb={4}>
+                    <Text color='#6b7280' fontSize='sm'>
+                        Showing {filteredResources.length} of {njResources.length} resources
+                        {selectedCategory !== 'all' && (
+                            <Text as='span' ml={1}>
+                                in {categories.find(c => c.id === selectedCategory)?.label}
+                            </Text>
+                        )}
+                    </Text>
+                        </HStack>
 
-                {/* Results */}
-                {loading && (
-                    <Center py={12}>
-                        <VStack spacing={4}>
-                            <Spinner color='#0ea5e9' size='xl' thickness='4px' />
-                            <Text color='#6b7280' fontSize='lg' fontWeight='500'>
-                                Finding resources near you...
+                {/* Resources Grid */}
+                {isLoading ? (
+                    <VStack spacing={4} py={12}>
+                        <Spinner size='xl' color='#8b5cf6' thickness='3px' />
+                        <Text color='#6b7280'>Loading resources...</Text>
+                    </VStack>
+                ) : filteredResources.length === 0 ? (
+                    <VStack spacing={4} py={12}>
+                        <Icon as={Search} boxSize={16} color='#d1d5db' />
+                        <VStack spacing={2}>
+                            <Heading size='md' color='#6b7280'>
+                                No resources found
+                            </Heading>
+                            <Text color='#9ca3af' textAlign='center'>
+                                Try adjusting your search or filter criteria
                             </Text>
                         </VStack>
-                    </Center>
-                )}
-
-                {!loading && resources.length > 0 && (
-                    <VStack spacing={6}>
-                        {/* Active Filters */}
-                        {selectedFilters.length > 0 && (
-                            <Box w='full'>
-                                <Text color='#374151' fontWeight='600' mb={3} fontSize='sm'>
-                                    Active filters:
-                                </Text>
-                                <Flex wrap='wrap' gap={2}>
-                                    {selectedFilters.map((filter) => (
-                                        <Badge
-                                            key={filter}
-                                            px={3}
-                                            py={1}
-                                            borderRadius='full'
-                                            bg='#0ea5e9'
-                                            color='white'
-                                            border='1px solid #0284c7'
-                                            fontSize='sm'
-                                            fontWeight='500'
-                                        >
-                                            {filter} ×
-                                        </Badge>
-                                    ))}
-                                </Flex>
-                            </Box>
-                        )}
-
-                        {/* Map or List View */}
-                        {viewMode === 'map' ? (
-                            <Box w='full' h='500px' borderRadius='12px' overflow='hidden' boxShadow='0 4px 6px rgba(0, 0, 0, 0.1)'>
-                                <MapView 
-                                    resources={resources}
-                                    userLocation={userLocation}
-                                    onResourceSelect={setSelectedResource}
-                                />
-                            </Box>
-                        ) : (
-                            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} w='full'>
-                                {resources.map((resource) => (
-                                <MotionBox
-                                    key={resource.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <Card
-                                        bg='white'
-                                        border='1px solid #e5e7eb'
-                                        borderRadius='16px'
-                                        boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'
-                                        _hover={{
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                    </VStack>
+                ) : (
+                <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+                        {filteredResources.map((resource, index) => {
+                            const category = categories.find(c => c.id === resource.category)
+                            
+                            return (
+                                <ScaleFade key={resource.id} in={true} initialScale={0.8}>
+                            <MotionCard
+                                        cursor='pointer'
+                                        onClick={() => handleResourceClick(resource)}
+                                bg='white'
+                                borderRadius='16px'
+                                        overflow='hidden'
+                                        boxShadow='0 2px 4px rgba(0, 0, 0, 0.05)'
+                                        border='1px solid #f3f4f6'
+                                        transition={{ duration: 0.3, ease: 'ease' }}
+                                _hover={{
+                                    transform: 'translateY(-4px)',
+                                            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+                                            borderColor: '#e5e7eb'
                                         }}
-                                        transition='all 0.2s ease-in-out'
+                                        h='full'
                                     >
                                         <CardBody p={6}>
-                                            <VStack spacing={4} align='start'>
+                                            <VStack align='stretch' spacing={4} h='full'>
                                                 {/* Header */}
-                                                <HStack justify='space-between' w='full'>
-                                                    <VStack spacing={1} align='start' flex='1'>
-                                                        <Heading size='md' color='#111827' fontWeight='700'>
-                                                            {resource.name}
-                                                        </Heading>
-                                                        <Text color='#6b7280' fontSize='sm'>
-                                                            {resource.distance} miles away
-                                                        </Text>
-                                                    </VStack>
-                                                    <Button
-                                                        variant='ghost'
-                                                        size='sm'
-                                                        onClick={() => toggleSaved(resource.id)}
-                                                    >
-                                                        <Heart 
-                                                            size={20} 
-                                                            color={savedResources.includes(resource.id) ? '#ef4444' : '#9ca3af'}
-                                                            fill={savedResources.includes(resource.id) ? '#ef4444' : 'none'}
-                                                        />
-                                                    </Button>
-                                                </HStack>
-
-                                                {/* Service Types */}
-                                                <Flex wrap='wrap' gap={1}>
-                                                    {resource.type.map((type) => (
+                                                <VStack align='stretch' spacing={3}>
+                                                    <HStack justify='space-between' align='start'>
                                                         <Badge
-                                                            key={type}
-                                                            px={2}
+                                                            colorScheme='purple'
+                                                            variant='subtle'
+                                                            px={3}
                                                             py={1}
-                                                            borderRadius='6px'
-                                                            bg='#f0f9ff'
-                                                            color='#0ea5e9'
-                                                            border='1px solid #e0f2fe'
+                                                            borderRadius='full'
                                                             fontSize='xs'
-                                                            fontWeight='500'
+                                                            fontWeight='600'
                                                         >
-                                                            {type}
+                                                            <HStack spacing={1}>
+                                                                <Icon as={category?.icon} boxSize={3} />
+                                                                <Text>{category?.label}</Text>
+                                            </HStack>
                                                         </Badge>
-                                                    ))}
-                                                </Flex>
+                                                        {resource.rating && (
+                                            <HStack spacing={1}>
+                                                <Icon as={Star} boxSize={4} color='#f59e0b' />
+                                                <Text fontSize='sm' fontWeight='600' color='#1f2937'>
+                                                    {resource.rating}
+                                                </Text>
+                                            </HStack>
+                                                        )}
+                                        </HStack>
 
-                                                {/* Special Badges */}
-                                                <Flex wrap='wrap' gap={2}>
-                                                    {resource.acceptingNew && (
-                                                        <Badge
-                                                            px={2}
-                                                            py={1}
-                                                            borderRadius='6px'
-                                                            bg='#dcfce7'
-                                                            color='#16a34a'
-                                                            border='1px solid #bbf7d0'
-                                                            fontSize='xs'
-                                                            fontWeight='500'
-                                                        >
-                                                            Accepting New
-                                                        </Badge>
-                                                    )}
-                                                    {resource.medicaidFriendly && (
-                                                        <Badge
-                                                            px={2}
-                                                            py={1}
-                                                            borderRadius='6px'
-                                                            bg='#fef3c7'
-                                                            color='#d97706'
-                                                            border='1px solid #fde68a'
-                                                            fontSize='xs'
-                                                            fontWeight='500'
-                                                        >
-                                                            Medicaid
-                                                        </Badge>
-                                                    )}
-                                                </Flex>
-
-                                                {/* Contact Info */}
-                                                <VStack spacing={2} align='start' w='full'>
-                                                    <HStack spacing={2}>
-                                                        <Icon as={MapPin} boxSize={4} color='#6b7280' />
-                                                        <Text color='#6b7280' fontSize='sm'>
-                                                            {resource.address}
-                                                        </Text>
-                                                    </HStack>
-                                                    <HStack spacing={2}>
-                                                        <Icon as={Phone} boxSize={4} color='#6b7280' />
-                                                        <Text color='#6b7280' fontSize='sm'>
-                                                            {resource.phone}
-                                                        </Text>
-                                                    </HStack>
-                                                    <HStack spacing={2}>
-                                                        <Icon as={Clock} boxSize={4} color='#6b7280' />
-                                                        <Text color='#6b7280' fontSize='sm'>
-                                                            {resource.hours}
-                                                        </Text>
-                                                    </HStack>
+                                                    <Heading size='md' color='#1f2937' fontWeight='600' lineHeight='1.3'>
+                                                        {resource.name}
+                                                    </Heading>
                                                 </VStack>
 
-                                                {/* Actions */}
-                                                <HStack spacing={2} w='full'>
-                                                    <Button
-                                                        variant='secondary'
-                                                        size='sm'
-                                                        leftIcon={<Phone />}
+                                                {/* Description */}
+                                                <Text 
+                                                    color='#6b7280' 
+                                                    fontSize='sm' 
+                                                    lineHeight='1.5'
+                                                    flex='1'
+                                                    noOfLines={3}
+                                                >
+                                            {resource.description}
+                                        </Text>
+
+                                                {/* Location */}
+                                                <HStack spacing={2} color='#9ca3af'>
+                                                    <Icon as={MapPin} boxSize={4} />
+                                                    <Text fontSize='sm'>
+                                                        {resource.distance || `${resource.address}, ${resource.zipCode}`}
+                                                    </Text>
+                                                </HStack>
+
+                                                {/* Tags */}
+                                                <HStack spacing={2} wrap='wrap'>
+                                            {resource.tags.slice(0, 2).map((tag, tagIndex) => (
+                                                <Badge 
+                                                    key={tagIndex}
+                                                            variant='outline'
+                                                            colorScheme='gray'
+                                                    fontSize='xs'
+                                                            px={2}
+                                                            py={1}
+                                                            borderRadius='md'
+                                                >
+                                                    {tag}
+                                                </Badge>
+                                            ))}
+                                            {resource.tags.length > 2 && (
+                                                        <Text fontSize='xs' color='#9ca3af'>
+                                                            +{resource.tags.length - 2} more
+                                                        </Text>
+                                            )}
+                                        </HStack>
+
+                                                {/* Action Buttons */}
+                                                <HStack spacing={2} pt={2}>
+                                        <Button
+                                            size='sm'
+                                            colorScheme='purple'
+                                            variant='outline'
                                                         flex='1'
-                                                        onClick={() => {
-                                                            const cleanPhone = resource.phone.replace(/[^\d+]/g, '')
-                                                            window.open(`tel:${cleanPhone}`)
+                                                        leftIcon={<Icon as={Phone} boxSize={4} />}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            handleCallResource(resource.phone)
                                                         }}
                                                     >
                                                         Call
                                                     </Button>
                                                     <Button
-                                                        variant='secondary'
                                                         size='sm'
-                                                        leftIcon={<Navigation />}
+                                                        colorScheme='purple'
                                                         flex='1'
-                                                        onClick={() => {
-                                                            const address = encodeURIComponent(resource.address)
-                                                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank')
+                                                        leftIcon={<Icon as={ExternalLink} boxSize={4} />}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            handleVisitWebsite(resource.website)
                                                         }}
                                                     >
-                                                        Directions
-                                                    </Button>
-                                                    <Button
-                                                        variant='primary'
-                                                        size='sm'
-                                                        flex='1'
-                                                        onClick={() => {
-                                                            setSelectedResource(resource)
-                                                            onDetailOpen()
-                                                        }}
-                                                    >
-                                                        Details
-                                                    </Button>
+                                                        Visit
+                                        </Button>
                                                 </HStack>
-                                            </VStack>
-                                        </CardBody>
-                                    </Card>
-                                </MotionBox>
-                            ))}
-                        </SimpleGrid>
-                        )}
-                    </VStack>
+                                    </VStack>
+                                </CardBody>
+                            </MotionCard>
+                                </ScaleFade>
+                            )
+                        })}
+                </SimpleGrid>
                 )}
-
-                {!loading && resources.length === 0 && searchQuery && (
-                    <Center py={12}>
-                        <VStack spacing={4}>
-                            <Icon as={MapPin} boxSize={12} color='#9ca3af' />
-                            <VStack spacing={2} textAlign='center'>
-                                <Heading size='md' color='#374151'>
-                                    No resources found
-                                </Heading>
-                                <Text color='#6b7280' fontSize='sm'>
-                                    Try adjusting your search or expanding your radius
-                                </Text>
-                            </VStack>
-                        </VStack>
-                    </Center>
-                )}
-
-                {!loading && !searchQuery && (
-                    <Center py={12}>
-                        <VStack spacing={4}>
-                            <Icon as={Search} boxSize={12} color='#9ca3af' />
-                            <VStack spacing={2} textAlign='center'>
-                                <Heading size='md' color='#374151'>
-                                    Search for resources
-                                </Heading>
-                                <Text color='#6b7280' fontSize='sm'>
-                                    Enter your ZIP code or address to find autism services near you
-                                </Text>
-                            </VStack>
-                        </VStack>
-                    </Center>
-                )}
-            </Container>
-
-            {/* Location Permission Modal */}
-            <Modal isOpen={showLocationPrompt} onClose={() => {}} size='md' closeOnOverlayClick={false}>
-                <ModalOverlay bg='rgba(0, 0, 0, 0.5)' />
-                <ModalContent 
-                    bg='white'
-                    borderRadius='16px'
-                    mx='4'
-                >
-                    <ModalHeader color='#111827' fontSize='2xl' fontWeight='700'>
-                        Help us find resources near you
-                    </ModalHeader>
-                    <ModalBody pb={6}>
-                        <VStack spacing={6} align='stretch'>
-                            <Text color='#6b7280' fontSize='md' lineHeight='1.6'>
-                                We can help you find autism resources in your area. Choose how you'd like to share your location:
-                            </Text>
-                            
-                            <VStack spacing={3} align='stretch'>
-                                <Button
-                                    variant='primary'
-                                    leftIcon={<MapPin />}
-                                    onClick={() => handleLocationChoice('precise')}
-                                    size='lg'
-                                    justifyContent='flex-start'
-                                    isLoading={isRequestingLocation}
-                                    loadingText='Getting location...'
-                                >
-                                    Use my precise location (GPS)
-                                </Button>
-                                
-                                <Button
-                                    variant='secondary'
-                                    leftIcon={<MapPin />}
-                                    onClick={() => handleLocationChoice('approximate')}
-                                    size='lg'
-                                    justifyContent='flex-start'
-                                    isLoading={isRequestingLocation}
-                                    loadingText='Setting location...'
-                                >
-                                    Use approximate location (city/ZIP)
-                                </Button>
-                                
-                                <Button
-                                    variant='secondary'
-                                    leftIcon={<Search />}
-                                    onClick={() => handleLocationChoice('manual')}
-                                    size='lg'
-                                    justifyContent='flex-start'
-                                >
-                                    I'll enter ZIP/address manually
-                                </Button>
-                            </VStack>
-
-                            {locationError && (
-                                <Box
-                                    bg='#fef2f2'
-                                    border='1px solid #fecaca'
-                                    borderRadius='8px'
-                                    p={3}
-                                    mt={4}
-                                >
-                                    <Text color='#dc2626' fontSize='sm' fontWeight='500'>
-                                        {locationError}
-                                    </Text>
-                                </Box>
-                            )}
-                            
-                            <Text color='#9ca3af' fontSize='sm' textAlign='center'>
-                                You can use Kora without sharing your exact location.
-                            </Text>
-                        </VStack>
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
-
-            {/* Saved Resources Modal */}
-            <Modal isOpen={isOpen} onClose={onClose} size='lg'>
-                <ModalOverlay bg='rgba(0, 0, 0, 0.5)' />
-                <ModalContent 
-                    bg='white'
-                    borderRadius='16px'
-                    mx='4'
-                >
-                    <ModalHeader color='#111827' fontSize='2xl' fontWeight='700'>
-                        Saved Resources
-                    </ModalHeader>
-                    <ModalCloseButton color='#6b7280' />
-                    <ModalBody pb={6}>
-                        {savedResources.length === 0 ? (
-                            <VStack spacing={4} py={8}>
-                                <Icon as={Heart} boxSize={12} color='#9ca3af' />
-                                <VStack spacing={2} textAlign='center'>
-                                    <Heading size='md' color='#374151'>
-                                        No saved resources yet
-                                    </Heading>
-                                    <Text color='#6b7280' fontSize='sm'>
-                                        Save resources you're interested in for quick access
-                                    </Text>
-                                </VStack>
-                            </VStack>
-                        ) : (
-                            <VStack spacing={4} align='stretch'>
-                                {resources
-                                    .filter(resource => savedResources.includes(resource.id))
-                                    .map((resource) => (
-                                        <Card
-                                            key={resource.id}
-                                            bg='white'
-                                            border='1px solid #e5e7eb'
-                                            borderRadius='12px'
-                                        >
-                                            <CardBody p={4}>
-                                                <HStack justify='space-between'>
-                                                    <VStack spacing={1} align='start' flex='1'>
-                                                        <Heading size='sm' color='#111827' fontWeight='600'>
-                                                            {resource.name}
-                                                        </Heading>
-                                                        <Text color='#6b7280' fontSize='xs'>
-                                                            {resource.distance} miles away
-                                                        </Text>
-                                                    </VStack>
-                                                    <HStack spacing={2}>
-                                                        <Button 
-                                                            size='sm' 
-                                                            variant='secondary' 
-                                                            leftIcon={<Phone />}
-                                                            onClick={() => {
-                                                                const cleanPhone = resource.phone.replace(/[^\d+]/g, '')
-                                                                window.open(`tel:${cleanPhone}`)
-                                                            }}
-                                                        >
-                                                            Call
-                                                        </Button>
-                                                        <Button 
-                                                            size='sm' 
-                                                            variant='secondary' 
-                                                            leftIcon={<Navigation />}
-                                                            onClick={() => {
-                                                                const address = encodeURIComponent(resource.address)
-                                                                window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank')
-                                                            }}
-                                                        >
-                                                            Directions
-                                                        </Button>
-                                                    </HStack>
-                                                </HStack>
-                                            </CardBody>
-                                        </Card>
-                                    ))}
-                            </VStack>
-                        )}
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
+            </VStack>
 
             {/* Resource Detail Modal */}
-            {selectedResource && (
-                <ResourceDetail
-                    resource={selectedResource}
-                    isOpen={isDetailOpen}
-                    onClose={onDetailClose}
-                    onSave={toggleSaved}
-                    isSaved={savedResources.includes(selectedResource.id)}
-                />
-            )}
-        </Box>
+            <Modal isOpen={isOpen} onClose={onClose} size='xl' isCentered>
+                <ModalOverlay bg='blackAlpha.600' backdropFilter='blur(4px)' />
+                <ModalContent borderRadius='20px' mx={4}>
+                    <ModalHeader pb={4}>
+                        <VStack align='stretch' spacing={3}>
+                            <HStack justify='space-between' align='start'>
+                                        <Badge 
+                                    colorScheme='purple'
+                                    variant='subtle'
+                                            px={3} 
+                                            py={1} 
+                                            borderRadius='full' 
+                                    fontSize='xs'
+                                            fontWeight='600'
+                                        >
+                                    {categories.find(c => c.id === selectedResource?.category)?.label}
+                                        </Badge>
+                                {selectedResource?.rating && (
+                                        <HStack spacing={1}>
+                                            <Icon as={Star} boxSize={4} color='#f59e0b' />
+                                        <Text fontSize='sm' fontWeight='600'>
+                                            {selectedResource.rating}
+                                        </Text>
+                                    </HStack>
+                                )}
+                            </HStack>
+                            <Heading size='lg' color='#1f2937'>
+                                {selectedResource?.name}
+                            </Heading>
+                                </VStack>
+                    </ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody pb={6}>
+                        <VStack align='stretch' spacing={6}>
+                            {/* Description */}
+                            <Text color='#6b7280' lineHeight='1.6'>
+                                {selectedResource?.description}
+                                    </Text>
+                                    
+                            {/* Contact Information */}
+                            <VStack align='stretch' spacing={4}>
+                                <Heading size='sm' color='#1f2937'>
+                                    Contact Information
+                                </Heading>
+                                
+                                <VStack align='stretch' spacing={3}>
+                                        <HStack spacing={3}>
+                                            <Icon as={MapPin} boxSize={5} color='#6b7280' />
+                                        <Text>
+                                            {selectedResource?.distance || `${selectedResource?.address}, ${selectedResource?.zipCode}`}
+                                            </Text>
+                                        </HStack>
+                                        
+                                        <HStack spacing={3}>
+                                            <Icon as={Phone} boxSize={5} color='#6b7280' />
+                                            <ChakraLink 
+                                            href={`tel:${selectedResource?.phone}`}
+                                            color='#8b5cf6'
+                                            fontWeight='500'
+                                                _hover={{ textDecoration: 'underline' }}
+                                            >
+                                            {selectedResource?.phone}
+                                            </ChakraLink>
+                                        </HStack>
+                                        
+                                        <HStack spacing={3}>
+                                            <Icon as={Globe} boxSize={5} color='#6b7280' />
+                                            <ChakraLink 
+                                            href={selectedResource?.website}
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                            color='#8b5cf6'
+                                            fontWeight='500'
+                                                _hover={{ textDecoration: 'underline' }}
+                                            >
+                                                Visit Website
+                                            </ChakraLink>
+                                        </HStack>
+                                    </VStack>
+                                </VStack>
+
+                            {/* Services/Tags */}
+                            <VStack align='stretch' spacing={3}>
+                                <Heading size='sm' color='#1f2937'>
+                                    Services & Specialties
+                                </Heading>
+                                <HStack spacing={2} wrap='wrap'>
+                                    {selectedResource?.tags.map((tag: string, index: number) => (
+                                            <Badge 
+                                                key={index}
+                                            variant='outline'
+                                                colorScheme='purple'
+                                            fontSize='sm'
+                                            px={3}
+                                            py={1}
+                                            borderRadius='md'
+                                            >
+                                                {tag}
+                                            </Badge>
+                                        ))}
+                                    </HStack>
+                                </VStack>
+
+                            {/* Action Buttons */}
+                                <HStack spacing={4} pt={4}>
+                                    <Button
+                                        colorScheme='purple'
+                                    flex='1'
+                                        leftIcon={<Icon as={Phone} boxSize={4} />}
+                                    onClick={() => handleCallResource(selectedResource?.phone)}
+                                    >
+                                        Call Now
+                                    </Button>
+                                <Button
+                                    colorScheme='purple'
+                                    variant='outline'
+                                    flex='1'
+                                    leftIcon={<Icon as={ExternalLink} boxSize={4} />}
+                                    onClick={() => handleVisitWebsite(selectedResource?.website)}
+                                >
+                                    Visit Website
+                                    </Button>
+                                </HStack>
+                            </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+        </Container>
     )
 }

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FormEvent, useEffect, useMemo, useState, useRef } from 'react'
 import { getChatHistory } from '../utils/getChatHistory'
@@ -12,13 +12,12 @@ import {
 import { motion } from 'framer-motion'
 import BotMessage from '../components/BotMessage'
 import UserMessage from '../components/UserMessage'
-import { SendIcon, Mic, MicOff, Bot, Brain } from 'lucide-react'
+import { SendIcon, Mic, MicOff, Bot, Brain, Trash2 } from 'lucide-react'
 import { saveChatHistory } from '../utils/saveChatHistory'
 import { historyConverter } from '../utils/historyConverter'
 
-const MotionBox = motion(Box)
+const MotionBox = motion(Box as any)
 
-// TypeScript declarations for Web Speech API
 declare global {
     interface Window {
         webkitSpeechRecognition: any
@@ -73,7 +72,6 @@ export default function ChatBotPage() {
     const toast = useToast()
     const queryClient = useQueryClient()
 
-    // Initialize speech recognition
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -134,13 +132,50 @@ export default function ChatBotPage() {
             if (!genAI) throw new Error('AI not initialized')
             
             try {
-                const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+                const modelNames = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro']
+                let lastError = null
                 
-                const prompt = `You are Kora AI, a supportive AI assistant specialized in autism care and understanding. Respond helpfully to: ${userMessage}`
+                for (const modelName of modelNames) {
+                    try {
+                        const model = genAI.getGenerativeModel({ 
+                            model: modelName,
+                            generationConfig: {
+                                temperature: 0.9,
+                                topK: 1,
+                                topP: 1,
+                                maxOutputTokens: 2048,
+                            },
+                            safetySettings: [
+                                {
+                                    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                                },
+                                {
+                                    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                                },
+                                {
+                                    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                                },
+                                {
+                                    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                                },
+                            ],
+                        })
+                        
+                        const prompt = `You are Kora AI, a supportive AI assistant specialized in autism care and understanding. Respond helpfully to: ${userMessage}`
+                        const result = await model.generateContent(prompt)
+                        const response = await result.response
+                        return response.text()
+                    } catch (modelError: any) {
+                        lastError = modelError
+                        console.log(`Model ${modelName} failed:`, modelError.message)
+                    }
+                }
                 
-                const result = await model.generateContent(prompt)
-                const response = await result.response
-                return response.text()
+                throw lastError || new Error('All model attempts failed')
             } catch (error) {
                 console.error('Gemini API error:', error)
                 throw new Error('Failed to get response from AI')
@@ -159,12 +194,10 @@ export default function ChatBotPage() {
                 
                 const updatedHistory = [...(chatHistory || []), newMessage, newResponse]
                 
-                // Auto-clear chat every 10 messages (5 exchanges)
                 const newMessageCount = messageCount + 1
                 setMessageCount(newMessageCount)
                 
                 if (newMessageCount >= 10) {
-                    // Clear chat history
                     await saveChatHistory({ uid: user.uid, history: [] })
                     setMessageCount(0)
                     toast({
@@ -219,6 +252,38 @@ export default function ChatBotPage() {
         }
     }
 
+    const clearChatMutation = useMutation({
+        mutationFn: async () => {
+            if (user?.uid) {
+                await saveChatHistory({ uid: user.uid, history: [] })
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['chatHistory', user?.uid] })
+            setMessageCount(0)
+            toast({
+                title: 'Chat Cleared',
+                description: 'Your chat history has been cleared',
+                status: 'success',
+                duration: 2000,
+                isClosable: true,
+            })
+        },
+        onError: () => {
+            toast({
+                title: 'Error',
+                description: 'Failed to clear chat. Please try again.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            })
+        },
+    })
+
+    const handleClearChat = () => {
+        clearChatMutation.mutate()
+    }
+
 
     return (
         <Box minHeight='100vh' bgGradient='linear(to-br, #faf5ff, #f3e8ff, #e9d5ff)'>
@@ -253,6 +318,24 @@ export default function ChatBotPage() {
                                 Your Personal Autism Support
                             </Text>
                         </VStack>
+                        {chatHistory && chatHistory.length > 0 && (
+                            <Tooltip label='Clear Chat' placement='bottom'>
+                                <IconButton
+                                    aria-label='Clear Chat'
+                                    icon={<Icon as={Trash2} />}
+                                    onClick={handleClearChat}
+                                    isLoading={clearChatMutation.isPending}
+                                    colorScheme='red'
+                                    variant='ghost'
+                                    size='sm'
+                                    borderRadius='full'
+                                    _hover={{
+                                        bg: 'red.50',
+                                        color: 'red.600',
+                                    }}
+                                />
+                            </Tooltip>
+                        )}
                     </HStack>
                     
                     <Text 
@@ -283,7 +366,6 @@ export default function ChatBotPage() {
 
                 </MotionBox>
 
-                {/* Chat Area */}
                 <MotionBox
                     bg='white'
                     borderRadius='20px'
@@ -297,7 +379,6 @@ export default function ChatBotPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                    {/* Messages */}
                     <Box 
                         flex='1' 
                         p={6} 
@@ -351,7 +432,6 @@ export default function ChatBotPage() {
                         )}
                     </Box>
 
-                    {/* Input Area */}
                     <Box p={6} borderTop='1px solid #f3f4f6'>
                         <form onSubmit={handleSubmit}>
                             <HStack spacing={3}>
@@ -369,7 +449,6 @@ export default function ChatBotPage() {
                                     disabled={sendMessageMutation.isPending}
                                 />
                                 
-                                {/* Voice Button */}
                                 <Tooltip label={isListening ? 'Stop Recording' : 'Start Recording'}>
                                     <IconButton
                                         aria-label={isListening ? 'Stop Recording' : 'Start Recording'}
@@ -389,7 +468,6 @@ export default function ChatBotPage() {
                                     />
                                 </Tooltip>
                                 
-                                {/* Send Button */}
                                 <Button
                                     type='submit'
                                     colorScheme='purple'
@@ -408,7 +486,6 @@ export default function ChatBotPage() {
                     </Box>
                 </MotionBox>
 
-                {/* Voice Status */}
                 {isListening && (
                     <MotionBox
                         position='fixed'

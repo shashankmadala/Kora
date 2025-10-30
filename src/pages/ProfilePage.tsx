@@ -57,9 +57,9 @@ export default function ProfilePage() {
     const navigate = useNavigate()
     const toast = useToast()
 
-    const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, key: string) => {
         setData((prev: any) => {
-            return { ...prev, ...{ [e.target.placeholder]: e.target.value } }
+            return { ...prev, ...{ [key]: e.target.value } }
         })
     }
 
@@ -74,16 +74,16 @@ export default function ProfilePage() {
         setSaving(true)
         if (data) {
             try {
-                await editProfile({ data, userId: user?.uid! })
-                toast({
-                    title: 'Profile Successfully Updated!',
+            await editProfile({ data, userId: user?.uid! })
+            toast({
+                title: 'Profile Successfully Updated!',
                     description: 'Your profile has been saved successfully.',
                     status: 'success',
                     duration: 3000,
                     isClosable: true,
                     position: 'top'
-                })
-                navigate('/')
+            })
+            navigate('/')
             } catch (error) {
                 toast({
                     title: 'Error updating profile',
@@ -101,24 +101,24 @@ export default function ProfilePage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const profile = await getProfile({ userId: user?.uid! })
-                setData(profile)
+            const profile = await getProfile({ userId: user?.uid! })
+            setData(profile)
             } catch (error) {
                 console.error('Error fetching profile:', error)
             } finally {
-                setLoading(false)
+            setLoading(false)
             }
         }
 
         if (user?.uid) {
-            fetchData()
+        fetchData()
         }
     }, [user])
 
     const goBack = () => navigate(-1)
 
     if (loading) {
-        return (
+    return (
             <Box minHeight='100vh' bgGradient='linear(to-br, #faf5ff, #f3e8ff, #e9d5ff)'>
                 <AbsoluteCenter>
                     <VStack spacing={4}>
@@ -126,11 +126,11 @@ export default function ProfilePage() {
                         <Text color='#6b7280' fontSize='lg'>Loading your profile...</Text>
                     </VStack>
                 </AbsoluteCenter>
-            </Box>
+                    </Box>
         )
     }
 
-    return (
+                            return (
         <Box minHeight='100vh' bgGradient='linear(to-br, #faf5ff, #f3e8ff, #e9d5ff)'>
             <Container maxW='container.xl' pt={{ base: 20, md: 24 }} pb={20} px={4}>
                 {/* Header */}
@@ -222,7 +222,19 @@ export default function ProfilePage() {
                                             <Icon as={Target} boxSize={6} color='#7c3aed' />
                                             <Text fontSize='sm' color='#6b7280' fontWeight='600'>Profile Completion</Text>
                                             <Text fontSize='2xl' color='#1f2937' fontWeight='800'>
-                                                {Math.round((Object.values(data).filter(value => value && value.toString().trim() !== '').length / 8) * 100)}%
+                                                {(() => {
+                                                    const profileFields = [
+                                                        'Child Name', 'Child Age', 'Diagnosis Date', 
+                                                        'Sensory Sensitivities', 'Current Therapies', 
+                                                        'Preferred Calming Techniques', 'Key Behavioral Traits',
+                                                        'Primary Method of Communication'
+                                                    ];
+                                                    const filledFields = profileFields.filter(field => 
+                                                        data[field as keyof Profile] && 
+                                                        data[field as keyof Profile].toString().trim() !== ''
+                                                    ).length;
+                                                    return Math.min(100, Math.round((filledFields / profileFields.length) * 100));
+                                                })()}%
                                             </Text>
                                         </VStack>
                                         <VStack spacing={2} p={4} bg='rgba(16, 185, 129, 0.05)' borderRadius='16px'>
@@ -272,7 +284,7 @@ export default function ProfilePage() {
                                                  input.key === 'Preferred Calming Techniques' || input.key === 'Key Behavioral Traits' ? (
                                                     <Textarea
                                                         placeholder={input.placeholder}
-                                                        onChange={handleInput}
+                                                        onChange={(e) => handleInput(e, input.key)}
                                                         value={data?.[input.key as keyof Profile] as string || ''}
                                                         bg='#f8fafc'
                                                         border='1px solid #e2e8f0'
@@ -290,7 +302,7 @@ export default function ProfilePage() {
                                                 ) : (
                                                     <Input
                                                         placeholder={input.placeholder}
-                                                        onChange={handleInput}
+                                                        onChange={(e) => handleInput(e, input.key)}
                                                         type={input.type || 'text'}
                                                         value={data?.[input.key as keyof Profile] as string || ''}
                                                         bg='#f8fafc'
@@ -305,7 +317,7 @@ export default function ProfilePage() {
                                                         }}
                                                     />
                                                 )}
-                                            </FormControl>
+                                </FormControl>
                                         </MotionBox>
                                     ))}
 
@@ -317,7 +329,7 @@ export default function ProfilePage() {
                                         transition={{ duration: 0.6, delay: 0.8 }}
                                         w='full'
                                     >
-                                        <FormControl as='fieldset'>
+                        <FormControl as='fieldset'>
                                             <FormLabel 
                                                 as='legend' 
                                                 fontSize='md' 
@@ -351,9 +363,9 @@ export default function ProfilePage() {
                                                             </Text>
                                                         </Radio>
                                                     ))}
-                                                </Stack>
-                                            </RadioGroup>
-                                        </FormControl>
+                                </Stack>
+                            </RadioGroup>
+                        </FormControl>
                                     </MotionBox>
                                 </VStack>
 
@@ -395,8 +407,8 @@ export default function ProfilePage() {
                                 </MotionBox>
                             </VStack>
                         </MotionCard>
-                    </ScaleFade>
-                )}
+                </ScaleFade>
+            )}
             </Container>
         </Box>
     )

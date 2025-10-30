@@ -10,8 +10,8 @@ import {
     CheckCircle, Globe, FileText
 } from 'lucide-react'
 
-const MotionBox = motion(Box)
-const MotionCard = motion(Card)
+const MotionBox = motion(Box as any)
+const MotionCard = motion(Card as any)
 
 const quickLinks = [
     { 
@@ -153,7 +153,6 @@ export default function HelpPage() {
                                     boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
                                     borderColor: link.color
                                 }}
-                                transition='all 0.3s ease'
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}

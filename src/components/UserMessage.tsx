@@ -2,7 +2,7 @@ import { Box, Text, HStack, Icon } from '@chakra-ui/react'
 import { User } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-const MotionBox = motion(Box)
+const MotionBox = motion(Box as any)
 
 export default function UserMessage({ text }: { text: string }) {
     return (

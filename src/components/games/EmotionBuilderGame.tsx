@@ -9,7 +9,6 @@ import { Heart, CheckCircle, RotateCcw, Plus, Minus, Zap } from 'lucide-react'
 const MotionBox = motion(Box)
 const MotionButton = motion(Button)
 
-// Complex emotion building system
 const basicEmotions = [
     { id: 'happy', name: 'Happy', emoji: '😊', intensity: 0, color: '#10b981' },
     { id: 'sad', name: 'Sad', emoji: '😢', intensity: 0, color: '#3b82f6' },
@@ -103,7 +102,6 @@ export default function EmotionBuilderGame({ onComplete, onClose }: EmotionBuild
 
         setAttempts(attempts + 1)
         
-        // Check if the current emotion mix matches the target
         const isCorrect = Object.entries(targetEmotion.recipe).every(([emotionId, requiredIntensity]) => {
             const currentIntensity = emotions.find(e => e.id === emotionId)?.intensity || 0
             return currentIntensity === requiredIntensity
@@ -114,6 +112,13 @@ export default function EmotionBuilderGame({ onComplete, onClose }: EmotionBuild
         if (isCorrect) {
             const points = Math.max(10, targetEmotion.points - (attempts * 5))
             setScore(score + points)
+            
+            const userAnswerDesc = Object.entries(targetEmotion.recipe)
+                .map(([emotionId, intensity]) => {
+                    const emotion = basicEmotions.find(e => e.id === emotionId)
+                    return `${emotion?.name} (${intensity})`
+                })
+                .join(', ')
             
             toast({
                 title: 'Perfect! 🎉',

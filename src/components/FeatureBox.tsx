@@ -46,8 +46,8 @@ export default function FeatureBox({ title, description, icon: IconComponent, to
         <MotionBox
             bg='white'
             border='1px solid rgba(255, 255, 255, 0.2)'
-            p={8}
-            borderRadius='24px'
+            p={6}
+            borderRadius='20px'
             boxShadow='0 4px 6px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.05)'
             _hover={{ 
                 transform: 'translateY(-8px)',
@@ -73,20 +73,20 @@ export default function FeatureBox({ title, description, icon: IconComponent, to
                 backgroundSize="15px 15px"
             />
             
-            <VStack spacing={6} align='start' h='full' position='relative' zIndex={1}>
-                <HStack spacing={4} align='center' w='full' justify='space-between'>
-                    <HStack spacing={4} align='center'>
+            <VStack spacing={4} align='start' h='full' position='relative' zIndex={1}>
+                <HStack spacing={3} align='center' w='full' justify='space-between'>
+                    <HStack spacing={3} align='center'>
                         <Box
-                            p={4}
-                            borderRadius='20px'
+                            p={3}
+                            borderRadius='16px'
                             bgGradient={getIconBg(title)}
                             border='1px solid rgba(255, 255, 255, 0.2)'
-                            boxShadow='0 4px 12px rgba(0, 0, 0, 0.1)'
+                            boxShadow='0 2px 8px rgba(0, 0, 0, 0.1)'
                         >
-                            <Icon as={IconComponent} boxSize={7} color={getIconColor(title)} />
+                            <Icon as={IconComponent} boxSize={5} color={getIconColor(title)} />
                         </Box>
                         <VStack align='start' spacing={1}>
-                            <Heading size='lg' color='#1f2937' fontWeight='700' letterSpacing='-0.01em'>
+                            <Heading size='md' color='#1f2937' fontWeight='700' letterSpacing='-0.01em'>
                                 {title}
                             </Heading>
                             <Badge 

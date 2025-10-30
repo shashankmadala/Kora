@@ -11,7 +11,6 @@ export const getProfile = async ({ userId }: getProfileArgs) => {
         if (profileDoc.exists()) {
             return profileDoc.data() as Profile
         } else {
-            // Return default profile if none exists
             return {
                 'Child Name': '',
                 'Child Age': '',

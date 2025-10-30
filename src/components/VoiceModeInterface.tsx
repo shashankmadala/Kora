@@ -55,7 +55,6 @@ export default function VoiceModeInterface({
     const toast = useToast()
     const animationRef = useRef<number>()
 
-    // Simulate voice level animation
     useEffect(() => {
         if (isListening || isSpeaking) {
             const animate = () => {
@@ -80,7 +79,6 @@ export default function VoiceModeInterface({
     const handleVoiceModeToggle = async () => {
         if (!isVoiceMode) {
             setIsInitializing(true)
-            // Simulate initialization delay
             await new Promise(resolve => setTimeout(resolve, 1000))
             setIsInitializing(false)
         }

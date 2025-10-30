@@ -30,7 +30,6 @@ export default function PostPage() {
     const post = useQuery({
         queryKey: ['post', id],
         queryFn: () => getPost(id as string),
-        // refetchInterval: 1000 * 30,
         refetchOnMount: 'always',
         staleTime: 1000 * 60,
     })
@@ -77,7 +76,6 @@ export default function PostPage() {
 
     const handleCreateComment = (e: FormEvent) => {
         e.preventDefault()
-        // @ts-ignore
         if (content != '') mutateCreateComment({ id, content, username: user?.displayName, commentId: crypto.randomUUID() })
         commentModal.onClose()
     }

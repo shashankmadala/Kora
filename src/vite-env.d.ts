@@ -8,6 +8,7 @@ interface Post {
     tags: string[]
     comments: PostComment[]
     username: string
+    likes?: number
 }
 
 interface Profile {
@@ -21,6 +22,7 @@ interface Profile {
     "Preferred Calming Techniques": string
     "Primary Method of Communication": string
     "Sensory Sensitivities": string
+    "Key Behavioral Traits": string
     creationDate: {
         nanoseconds: number
         seconds: number

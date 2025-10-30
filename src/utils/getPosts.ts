@@ -198,7 +198,6 @@ export const getPosts = async () => {
             posts.push({ id: doc.id, ...doc.data() } as Post)
         })
         
-        // If no posts exist, return sample posts (don't add to Firebase to avoid issues)
         if (posts.length === 0) {
             console.log('No posts found, returning sample posts...')
             return samplePosts.map((post, index) => ({ id: `sample-${index}`, ...post })) as Post[]
@@ -207,7 +206,6 @@ export const getPosts = async () => {
         return posts
     } catch (error) {
         console.error('Error fetching posts:', error)
-        // Return sample posts as fallback
         return samplePosts.map((post, index) => ({ id: `sample-${index}`, ...post })) as Post[]
     }
 }

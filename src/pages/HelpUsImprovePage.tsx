@@ -246,7 +246,6 @@ export default function HelpUsImprovePage() {
                                             transform: 'translateY(-4px)',
                                             boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)'
                                         }}
-                                        transition='all 0.3s ease'
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.6, delay: index * 0.1 }}
